@@ -65,12 +65,12 @@ public class GmmlArc extends GmmlGraphicsShape
 	{
 		this(canvas);
 		
-		this.startX 	= startx;
-		this.startY 	= starty;
+		gdata.setStartX(startx);
+		gdata.setStartY(starty);
 		setGmmlWidth(width);
 		setGmmlHeight(height);
 		this.color 		= color;
-		this.rotation 	= rotation;
+		gdata.setRotation(rotation);
 				
 		setHandleLocation();
 		createJdomElement(doc);

@@ -31,6 +31,7 @@ public class GmmlShape extends GmmlGraphicsShape
 
 	public static final int TYPE_RECTANGLE	= 0;
 	public static final int TYPE_OVAL 		= 1;
+	public static final int TYPE_ARC	 	= 2;
 	
 	public final List attributes = Arrays.asList(new String[] {
 			"CenterX", "CenterY", "Width", "Height", 
@@ -41,9 +42,7 @@ public class GmmlShape extends GmmlGraphicsShape
 			"Rectangle","Oval"
 	});
 		
-	String notes = "";
 	int type;
-	RGB color;
 		
 	/**
 	 * Constructor for this class
@@ -73,11 +72,10 @@ public class GmmlShape extends GmmlGraphicsShape
 		centerY = y;
 		setGmmlWidth(width);
 		setGmmlHeight(height);
-		this.color 		= color;
+		gdata.setColor(color);
 		this.type 		= type;
-		this.rotation 	= rotation;
+		gdata.setRotation (rotation);
 
-		calcStart(x, y);
 		setHandleLocation();
 		createJdomElement(doc);
 	}
@@ -93,7 +91,6 @@ public class GmmlShape extends GmmlGraphicsShape
 		gdata.jdomElement = e;
 		mapAttributes(e);
 		
-		calcStart();
 		setHandleLocation();
 	}
 			
@@ -102,17 +99,10 @@ public class GmmlShape extends GmmlGraphicsShape
 	 */
 	public void updateJdomElement() {
 		if(gdata.jdomElement != null) {
-			gdata.jdomElement.setAttribute("Type", (String)typeMappings.get(type));
-			gdata.jdomElement.setAttribute("Notes", notes);
-			Element jdomGraphics = gdata.jdomElement.getChild("Graphics");
-			if(jdomGraphics !=null) {
-				jdomGraphics.setAttribute("CenterX", Integer.toString(getCenterX() * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("CenterY", Integer.toString(getCenterY() * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("Width", Integer.toString(getGmmlWidth()));
-				jdomGraphics.setAttribute("Height", Integer.toString(getGmmlHeight()));
-				jdomGraphics.setAttribute("Color", ColorConverter.color2HexBin(color));
-				jdomGraphics.setAttribute("Rotation", Double.toString(rotation));
-			}
+			gdata.updateColor();
+			gdata.updateRotation();
+			gdata.updateShapeData();
+			gdata.updateNotesAndComment();
 		}
 	}
 
@@ -128,10 +118,10 @@ public class GmmlShape extends GmmlGraphicsShape
 	
 	protected void adjustToZoom(double factor)
 	{
-		startX *= factor;
-		startY *= factor;
-		width 	*= factor;
-		height	*= factor;
+		gdata.setLeft(gdata.getLeft() * factor);
+		gdata.setTop(gdata.getTop() * factor);
+		gdata.setWidth(gdata.getWidth() * factor);
+		gdata.setHeight(gdata.getHeight() * factor);
 		setHandleLocation();
 	}
 	
@@ -148,29 +138,51 @@ public class GmmlShape extends GmmlGraphicsShape
 		}
 		buffer.setForeground (c);
 		buffer.setLineStyle (SWT.LINE_SOLID);
-		buffer.setLineWidth (1);
 		
 		Transform tr = new Transform(e.display);
 		rotateGC(buffer, tr);
 		
+		int startX = (int)gdata.getLeft();
+		int startY = (int)gdata.getTop();
+		int width = (int)gdata.getWidth();
+		int height = (int)gdata.getHeight();
+		
 		if (type == TYPE_RECTANGLE)
 		{
+			buffer.setLineWidth (1);
 			buffer.drawRectangle (
-				(int)(startX),
-				(int)(startY),
-				(int)(width),
-				(int)(height)
+				startX,
+				startY,
+				width,
+				height
 			);
 		}
 		else if (type == TYPE_OVAL)
 		{
+			buffer.setLineWidth (1);
 			buffer.drawOval (
-				(int)(startX), 
-				(int)(startY),
-				(int)(width), 
-				(int)(height)
+				startX, 
+				startY,
+				width, 
+				height
 			);
-		}	
+		}
+		else if (type == TYPE_ARC)
+		{
+			buffer.setLineWidth (2);
+			buffer.drawArc(
+					startX, 
+					startY,
+					width, 
+					height,
+				 0, -180
+			);			
+			buffer.setTransform(null);
+			
+			tr.dispose();
+			c.dispose();
+
+		}
 		
 		buffer.setTransform(null);
 		
@@ -194,8 +206,9 @@ public class GmmlShape extends GmmlGraphicsShape
 			propItems = new Hashtable();
 		}
 		
-		Object[] values = new Object[] {(double)getCenterX(), (double)getCenterY(),
-				width, height, type, color, rotation, notes};
+		Object[] values = new Object[] {getCenterX(), getCenterY(),
+				gdata.getWidth(), gdata.getHeight(), type, gdata.getColor(), 
+				gdata.getRotation(), gdata.getNotes()};
 		
 		for (int i = 0; i < attributes.size(); i++)
 		{

@@ -230,10 +230,10 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		
 	public void adjustToZoom(double factor)
 	{
-		startX	*= factor;
-		startY	*= factor;
-		width	*= factor;
-		height	*= factor;
+		gdata.setLeft(gdata.getLeft() * factor);
+		gdata.setTop(gdata.getTop() * factor);
+		gdata.setWidth(gdata.getWidth() * factor);
+		gdata.setHeight(gdata.getHeight() * factor);
 		fontSizeDouble *= factor;
 		fontSize = (int)fontSizeDouble;
 		setHandleLocation();

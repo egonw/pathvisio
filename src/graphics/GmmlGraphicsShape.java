@@ -185,7 +185,7 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	 */
 	public void setCenter(Point cn) {
 		gdata.setCenterX(cn.x);
-		startY = cn.y - height/2;
+		gdata.setCenterY(cn.y);
 	}
 	
 	/**
@@ -196,8 +196,8 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	 * @return
 	 */
 	public Point calcNewCenter(double newWidth, double newHeight) {
-		Point cn = new Point((newWidth - width)/2, (newHeight - height)/2);
-		Point cr = LinAlg.rotate(cn, rotation);
+		Point cn = new Point((newWidth - gdata.getWidth())/2, (newHeight - gdata.getHeight())/2);
+		Point cr = LinAlg.rotate(cn, gdata.getRotation());
 		return relativeToCanvas(cr);
 	}
 	
@@ -206,9 +206,9 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	 * @param angle angle of rotation in radians
 	 */
 	public void setRotation(double angle) {
-		rotation = angle;
-		if(angle < 0) rotation += Math.PI*2;
-		if(angle > Math.PI*2) rotation -= Math.PI*2;
+		gdata.setRotation(angle);
+		if(angle < 0) gdata.setRotation(angle + Math.PI*2);
+		if(angle > Math.PI*2) gdata.setRotation (angle - Math.PI*2);
 	}
 	
 	/**
@@ -218,7 +218,7 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	 */
 	protected void rotateGC(GC gc, Transform tr) {
 		tr.translate(getCenterX(), getCenterY());
-		tr.rotate((float)Math.toDegrees(-rotation));	
+		tr.rotate((float)Math.toDegrees(-gdata.getRotation()));	
 		tr.translate(-getCenterX(), -getCenterY());
 		gc.setTransform(tr);
 	}
@@ -229,7 +229,7 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 			Point def = relativeToCenter(getHandleLocation(h));
 			Point cur = relativeToCenter(new Point(h.centerx, h.centery));
 			
-			setRotation(rotation - LinAlg.angle(def, cur));
+			setRotation(gdata.getRotation() - LinAlg.angle(def, cur));
 		
 			setHandleLocation(h);
 			return;
@@ -244,32 +244,32 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 		double dh = 0;
 			
 		if	(h == handleN || h == handleNE || h == handleNW) {
-			dy = -(hi.y + height/2);
+			dy = -(hi.y + gdata.getHeight()/2);
 			dh = -dy;
 		}
 		if	(h == handleS || h == handleSE || h == handleSW ) {
-			dy = hi.y - height/2;
+			dy = hi.y - gdata.getHeight()/2;
 			dh = dy;
 		}
 		if	(h == handleE || h == handleNE || h == handleSE) {
-			dx = hi.x - width/2;
+			dx = hi.x - gdata.getWidth()/2;
 			dw = dx;
 		}
 		if	(h == handleW || h == handleNW || h== handleSW) {
-			dx = -(hi.x + width/2);
+			dx = -(hi.x + gdata.getWidth()/2);
 			dw = -dx;
 		};
 		
-		Point nc = calcNewCenter(width + dw, height + dh);
-		height += dy;
-		width += dx;
+		Point nc = calcNewCenter(gdata.getWidth() + dw, gdata.getHeight() + dh);
+		gdata.setHeight(gdata.getHeight() + dy);
+		gdata.setWidth(gdata.getWidth() + dx);
 		setCenter(nc);		
 	
 		//In case object had zero width, switch handles
-		if(width < 0) {
+		if(gdata.getWidth() < 0) {
 			negativeWidth(h);
 		}
-		if(height < 0) {
+		if(gdata.getHeight() < 0) {
 			negativeHeight(h);
 		}	
 				
@@ -287,8 +287,8 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 		} else {
 			h = getOppositeHandle(h, GmmlHandle.DIRECTION_XY);
 		}
-		width = -width;
-		startX -= width;
+		gdata.setWidth (-gdata.getWidth());
+		gdata.setLeft(gdata.getLeft() - gdata.getWidth());
 		canvas.setPressedObject(h);
 	}
 	
@@ -303,8 +303,8 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 		} else {
 			h = getOppositeHandle(h, GmmlHandle.DIRECTION_XY);
 		}
-		height = -height;
-		startY -= height;
+		gdata.setHeight(-gdata.getHeight());
+		gdata.setTop(gdata.getTop() - gdata.getHeight());
 		canvas.setPressedObject(h);
 	}
 	
@@ -336,7 +336,7 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 		p = getHandleLocation(handleR);
 		if(ignore != handleR) handleR.setLocation(p.x, p.y);
 		
-		for(GmmlHandle h : getHandles()) h.rotation = rotation;
+		for(GmmlHandle h : getHandles()) h.rotation = gdata.getRotation();
 	}
 	
 	/**
@@ -354,17 +354,17 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	 * @return
 	 */
 	private Point getHandleLocation(GmmlHandle h) {
-		if(h == handleN) return toExternal(0, -height/2);
-		if(h == handleE) return toExternal(width/2, 0);
-		if(h == handleS) return toExternal(0,  height/2);
-		if(h == handleW) return toExternal(-width/2, 0);
+		if(h == handleN) return toExternal(0, -gdata.getHeight()/2);
+		if(h == handleE) return toExternal(gdata.getWidth()/2, 0);
+		if(h == handleS) return toExternal(0,  gdata.getHeight()/2);
+		if(h == handleW) return toExternal(-gdata.getWidth()/2, 0);
 		
-		if(h == handleNE) return toExternal(width/2, -height/2);
-		if(h == handleSE) return toExternal(width/2, height/2);
-		if(h == handleSW) return toExternal(-width/2, height/2);
-		if(h == handleNW) return toExternal(-width/2, -height/2);
+		if(h == handleNE) return toExternal(gdata.getWidth()/2, -gdata.getHeight()/2);
+		if(h == handleSE) return toExternal(gdata.getWidth()/2, gdata.getHeight()/2);
+		if(h == handleSW) return toExternal(-gdata.getWidth()/2, gdata.getHeight()/2);
+		if(h == handleNW) return toExternal(-gdata.getWidth()/2, -gdata.getHeight()/2);
 
-		if(h == handleR) return toExternal(width/2 + (30*getDrawing().getZoomFactor()), 0);
+		if(h == handleR) return toExternal(gdata.getWidth()/2 + (30*getDrawing().getZoomFactor()), 0);
 		return null;
 	}
 	
@@ -452,34 +452,6 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 		return getOutline().getBounds();
 	}
 		
-	/*
-	Methods for compatibility with GMML elements that use centerx,centery instead of startx, starty
-	Will be removed when GMML is updated
-	*/
-	double centerX;
-	double centerY;
-	/**
-	 * Method for compatibility with GMML element, which uses centerx,centery instead of startx,starty.
-	 * Call this method after setting width, height and centerx, centery.
-	 * Will be removed when GMML is updated and all shape-like elements have startx,starty
-	 */
-	public void calcStart() {
-		startX = centerX - width/2;
-		startY = centerY - height/2;
-	}
-	
-	/**
-	 * Method for compatibility with GMML element, which uses centerx,centery instead of startx,starty.
-	 * Call this method after setting width, height.
-	 * Will be removed when GMML is updated and all shape-like elements have startx,starty
-	 * @param cx x-coördinate of the center
-	 * @param cy y-coördinate of the center
-	 */
-	public void calcStart(double cx, double cy) {
-		centerX = cx;
-		centerY = cy;
-		calcStart();
-	}
 	
 	/**
 	 * Sets the width of the graphical representation.
@@ -489,13 +461,13 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	 * @param gmmlWidth the width as specified in the GMML representation
 	 */
 	public void setGmmlWidth(double gmmlWidth) {
-		this.width = gmmlWidth * 2;
+		gdata.setWidth(gmmlWidth * 2);
 		
 		if(this instanceof GmmlShape) {			
-			if(((GmmlShape)this).type == GmmlShape.TYPE_RECTANGLE) width /= 2;
+			if(((GmmlShape)this).type == GmmlShape.TYPE_RECTANGLE) gdata.setWidth(gmmlWidth);
 		}
 		else if(this instanceof GmmlLabel ||
-				this instanceof GmmlGeneProduct ) { width /=2; }
+				this instanceof GmmlGeneProduct ) { gdata.setWidth(gmmlWidth); }
 	}
 	
 	/**
@@ -503,14 +475,14 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	 * @return
 	 */
 	public int getGmmlWidth() {
-		double width = this.width * GmmlData.GMMLZOOM;
+		double width = gdata.getWidth() * GmmlData.GMMLZOOM;
 		if(this instanceof GmmlShape) {
 			return (int)(((GmmlShape)this).type == GmmlShape.TYPE_OVAL ? width / 2 : width);
 		}
 		else if(this instanceof GmmlLabel ||
 				this instanceof GmmlGeneProduct) return (int)width;
 		
-		return (int)((this.width * GmmlData.GMMLZOOM)/2);
+		return (int)((gdata.getWidth() * GmmlData.GMMLZOOM)/2);
 	}
 	
 	/**
@@ -521,13 +493,13 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	 *  @param gmmlHeight the height as specified in the GMML representation
 	 */
 	public void setGmmlHeight(double gmmlHeight) {
-		this.height = gmmlHeight * 2;
+		gdata.setHeight(gmmlHeight * 2);
 		
 		if(this instanceof GmmlShape) {
-			if(((GmmlShape)this).type == GmmlShape.TYPE_RECTANGLE) height /= 2;
+			if(((GmmlShape)this).type == GmmlShape.TYPE_RECTANGLE) gdata.setHeight(gmmlHeight);
 		}
 		else if(this instanceof GmmlLabel ||
-				this instanceof GmmlGeneProduct) { height /=2; }
+				this instanceof GmmlGeneProduct) { gdata.setHeight(gmmlHeight); }
 	}
 	
 	/**
@@ -535,13 +507,13 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	 * @return
 	 */
 	public int getGmmlHeight() {
-		double height = this.height * GmmlData.GMMLZOOM;
+		double height = gdata.getHeight() * GmmlData.GMMLZOOM;
 		if(this instanceof GmmlShape) {
 			return (int)(((GmmlShape)this).type == GmmlShape.TYPE_OVAL ? height / 2 : height);
 		}
 		else if(this instanceof GmmlLabel ||
 				this instanceof GmmlGeneProduct) return (int)height;
 		
-		return (int)((this.height * GmmlData.GMMLZOOM)/2);
+		return (int)((gdata.getHeight() * GmmlData.GMMLZOOM)/2);
 	}
 }
