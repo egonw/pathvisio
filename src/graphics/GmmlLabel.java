@@ -50,25 +50,32 @@ import data.GmmlData;
 public class GmmlLabel extends GmmlGraphicsShape
 {
 	private static final long serialVersionUID = 1L;
-	private static final int INITIAL_FONTSIZE = 10;
+	
+	public static final int INITIAL_FONTSIZE = 10;
 	public static final int INITIAL_WIDTH = 80;
 	public static final int INITIAL_HEIGHT = 20;
 	
 	public final List attributes = Arrays.asList(new String[] {
 			"TextLabel", "CenterX", "CenterY", "Width","Height",
 			"FontName","FontWeight","FontStyle","FontSize","Color",
-			"Notes"
+			"Notes", "Comment"
 	});
 	
-	String text				= "";
-	String fontName			= "Times New Roman";
-	String fontWeight		= "bold";
-	String fontStyle		= "normal";
-	int fontSize;
-	double fontSizeDouble;
-	RGB color = new RGB(0,0,0);
-	String notes = "";
-			
+	double getFontSize()
+	{
+		return gdata.getFontSize() * canvas.getZoomFactor();
+	}
+	
+	void setFontSize(double v)
+	{
+		gdata.setFontSize(v / canvas.getZoomFactor());
+	}
+	
+	String getLabelText()
+	{
+		return gdata.getLabelText();
+	}
+				
 	/**
 	 * Constructor for this class
 	 * @param canvas - the GmmlDrawing this label will be part of
@@ -78,8 +85,7 @@ public class GmmlLabel extends GmmlGraphicsShape
 		super(canvas);
 		drawingOrder = GmmlDrawing.DRAW_ORDER_LABEL;
 
-		this.fontSizeDouble = INITIAL_FONTSIZE / canvas.getZoomFactor();
-		this.fontSize = (int)this.fontSizeDouble;
+		gdata.setFontSize (INITIAL_FONTSIZE);
 	}
 	
 	/**
@@ -105,13 +111,6 @@ public class GmmlLabel extends GmmlGraphicsShape
 		this.centerY = y;
 		setGmmlWidth(width);
 		setGmmlHeight(height);
-		this.text = text;
-		this.fontName = font;
-		this.fontWeight = fontWeight;
-		this.fontStyle = fontStyle;
-		this.fontSize = fontSize;
-		this.fontSizeDouble = fontSize;
-		this.color = color;
 				
 		calcStart();	
 		setHandleLocation();
@@ -140,23 +139,23 @@ public class GmmlLabel extends GmmlGraphicsShape
 	public GmmlLabel (Element e, GmmlDrawing canvas) {
 		this(canvas);
 		
-		this.jdomElement = e;
+		this.gdata.jdomElement = e;
 		mapAttributes(e);
+		gdata.mapColor();
+		gdata.mapLabelData();
+		gdata.mapNotesAndComment();
 		calcStart();
 		setHandleLocation();
 	}
-		
-	public void setFontSize(double size) {
-		fontSizeDouble = size;
-		fontSize = (int)size;
-	}
 	
-	public void setText(String text) {
-		this.text = text;
+	public void setLabelText(String text) {
+		gdata.setLabelText (text);
 		
 		//Adjust width to text length
 		GC gc = new GC(canvas.getDisplay());
-		Font f = new Font(canvas.getDisplay(), fontName, fontSize, getFontStyle());
+		Font f = new Font(canvas.getDisplay(), 
+				gdata.getFontName(), 
+				(int)gdata.getFontSize(), getFontStyle());
 		gc.setFont (f);
 		Point ts = gc.textExtent(text);
 		
@@ -179,20 +178,16 @@ public class GmmlLabel extends GmmlGraphicsShape
 	 * Updates the JDom representation of this label
 	 */
 	public void updateJdomElement() {
-		if(jdomElement != null) {
-			jdomElement.setAttribute("TextLabel", text);
-			jdomElement.setAttribute("FontName", fontName);
-			jdomElement.setAttribute("FontWeight", fontWeight);
-			jdomElement.setAttribute("FontStyle", fontStyle);
-			jdomElement.setAttribute("FontSize", Integer.toString(fontSize));
-			jdomElement.setAttribute("Notes", notes);
-			Element jdomGraphics = jdomElement.getChild("Graphics");
+		if(gdata.jdomElement != null) {
+			gdata.updateNotesAndComment();
+			Element jdomGraphics = gdata.jdomElement.getChild("Graphics");			
 			if(jdomGraphics !=null) {
+				gdata.updateLabelData();
+				gdata.updateColor();
 				jdomGraphics.setAttribute("CenterX", Integer.toString(getCenterX() * GmmlData.GMMLZOOM));
 				jdomGraphics.setAttribute("CenterY", Integer.toString(getCenterY() * GmmlData.GMMLZOOM));
 				jdomGraphics.setAttribute("Width", Integer.toString((int)width * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("Height", Integer.toString((int)height * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("Color", ColorConverter.color2HexBin(color));
+				jdomGraphics.setAttribute("Height", Integer.toString((int)height * GmmlData.GMMLZOOM));				
 			}
 		}
 	}
@@ -235,7 +230,7 @@ public class GmmlLabel extends GmmlGraphicsShape
 	protected void disposeTextControl()
 	{
 		markDirty();
-		setText(t.getText());
+		setLabelText(t.getText());
 		markDirty();
 		Composite c = t.getParent();
 		c.setVisible(false);
@@ -245,11 +240,11 @@ public class GmmlLabel extends GmmlGraphicsShape
 	}
 	
 	protected void createJdomElement(Document doc) {
-		if(jdomElement == null) {
-			jdomElement = new Element("Label");
-			jdomElement.addContent(new Element("Graphics"));
+		if(gdata.jdomElement == null) {
+			gdata.jdomElement = new Element("Label");
+			gdata.jdomElement.addContent(new Element("Graphics"));
 			
-			doc.getRootElement().addContent(jdomElement);
+			doc.getRootElement().addContent(gdata.jdomElement);
 		}
 	}
 	
@@ -259,20 +254,19 @@ public class GmmlLabel extends GmmlGraphicsShape
 		startY		*= factor;
 		width		*= factor;
 		height		*= factor;
-		fontSizeDouble *= factor;
-		fontSize = (int)fontSizeDouble;
+		gdata.setFontSize(gdata.getFontSize() * factor);
 		setHandleLocation();
 	}
 
 	private int getFontStyle() {
 		int style = SWT.NONE;
 		
-		if (fontWeight.equalsIgnoreCase("bold"))
+		if (gdata.isBold())
 		{
 			style |= SWT.BOLD;
 		}
 		
-		if (fontStyle.equalsIgnoreCase("italic"))
+		if (gdata.isItalic())
 		{
 			style |= SWT.ITALIC;
 		}
@@ -283,11 +277,11 @@ public class GmmlLabel extends GmmlGraphicsShape
 	{
 		int style = getFontStyle();
 		
-		Font f = new Font(e.display, fontName, fontSize, style);
+		Font f = new Font(e.display, gdata.getFontName(), (int)gdata.getFontSize(), style);
 		
 		buffer.setFont (f);
 		
-		Point textSize = buffer.textExtent (text);
+		Point textSize = buffer.textExtent (gdata.getLabelText());
 		
 		Color c = null;
 		if (isSelected())
@@ -296,11 +290,11 @@ public class GmmlLabel extends GmmlGraphicsShape
 		}
 		else 
 		{
-			c = SwtUtils.changeColor(c, this.color, e.display);
+			c = SwtUtils.changeColor(c, gdata.getColor(), e.display);
 		}
 		buffer.setForeground (c);
 		
-		buffer.drawString (text, 
+		buffer.drawString (gdata.getLabelText(), 
 			(int) getCenterX() - (textSize.x / 2) , 
 			(int) getCenterY() - (textSize.y / 2), true);
 		
@@ -325,9 +319,10 @@ public class GmmlLabel extends GmmlGraphicsShape
 			propItems = new Hashtable();
 		}
 		
-		Object[] values = new Object[] {text, (double)getCenterX(), 
-				(double)getCenterY(), width, height, fontName, fontWeight, 
-				fontStyle, fontSize, color, notes};
+		Object[] values = new Object[] {gdata.getLabelText(), (double)getCenterX(), 
+				(double)getCenterY(), width, height, gdata.getFontName(), gdata.isBold(), 
+				gdata.isItalic(), gdata.getFontSize(), gdata.getColor(), 
+				gdata.getNotes(), gdata.getComment()};
 		
 		for (int i = 0; i < attributes.size(); i++)
 		{
@@ -339,20 +334,19 @@ public class GmmlLabel extends GmmlGraphicsShape
 	{
 		markDirty();
 		
-		String text = ((String)propItems.get(attributes.get(0)));
+		gdata.setLabelText (((String)propItems.get(attributes.get(0))));
 		centerX		= (Double)propItems.get(attributes.get(1));
 		centerY		= (Double)propItems.get(attributes.get(2));
 		width		= (Double)propItems.get(attributes.get(3));
 		height 		= (Double)propItems.get(attributes.get(4));
-		fontName	= (String)propItems.get(attributes.get(5));
-		fontWeight	= (String)propItems.get(attributes.get(6));
-		fontStyle	= (String)propItems.get(attributes.get(7));
-		fontSize	= (Integer)propItems.get(attributes.get(8));
-		color		= (RGB)propItems.get(attributes.get(9));
-		notes		= (String)propItems.get(attributes.get(10));
-		
+		gdata.setFontName	((String)propItems.get(attributes.get(5)));
+		gdata.setBold ((Boolean)propItems.get(attributes.get(6)));
+		gdata.setItalic ((Boolean)propItems.get(attributes.get(7)));
+		gdata.setFontSize	((Double)propItems.get(attributes.get(8)));
+		gdata.setColor		((RGB)propItems.get(attributes.get(9)));
+		gdata.setNotes((String)propItems.get(attributes.get(10)));
+		gdata.setComment ((String)propItems.get(attributes.get(11)));
 		//Check for change in text and resize width if needed
-		if(!this.text.equals(text)) setText(text);
 		
 		calcStart();
 		markDirty();
@@ -373,28 +367,29 @@ public class GmmlLabel extends GmmlGraphicsShape
 			String value = at.getValue();
 			switch(index) {
 					case 0: // TextLabel
-						this.text = value; break;
+						break;
 					case 1: // CenterX
-						this.centerX = Integer.parseInt(value) / GmmlData.GMMLZOOM ; break;
+						this.centerX = Double.parseDouble(value) / GmmlData.GMMLZOOM ; break;
 					case 2: // CenterY
-						this.centerY = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						this.centerY = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
 					case 3: // Width
-						this.width = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						this.width = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
 					case 4:	// Height
-						this.height = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						this.height = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
 					case 5: // FontName
-						this.fontName = value; break;
+						break;
 					case 6: // FontWeight
-						this.fontWeight = value; break;
+						break;
 					case 7: // FontStyle
-						this.fontStyle = value; break;
+						break;
 					case 8: // FontSize
-						this.fontSize = Integer.parseInt(value);
-						this.fontSizeDouble = this.fontSize; break;
+						break;
 					case 9: // Color
-						this.color = ColorConverter.gmmlString2Color(value); break;
+						break;
 					case 10: // Notes
-						this.notes = value; break;
+						break;
+					case 11: // Comment
+						break;
 					case -1:
 						GmmlVision.log.trace("\t> Attribute '" + at.getName() + "' is not recognized");
 			}

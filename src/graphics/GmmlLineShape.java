@@ -55,9 +55,9 @@ public class GmmlLineShape extends GmmlGraphicsLine
 	 * Constructor for this class
 	 * @param canvas - the GmmlDrawing this lineshape will be part of
 	 */
-	public GmmlLineShape(GmmlDrawing canvas)
+	public GmmlLineShape(GmmlDrawing canvas, double startx, double starty, double endx, double endy)
 	{
-		super(canvas);
+		super(canvas, startx, starty, endx, endy);
 		drawingOrder = GmmlDrawing.DRAW_ORDER_LINESHAPE;
 	}
 	
@@ -74,12 +74,8 @@ public class GmmlLineShape extends GmmlGraphicsLine
 	 */	
 	public GmmlLineShape(double startx, double starty, double endx, double endy, int type, RGB color, GmmlDrawing canvas, Document doc)
 	{
-		this(canvas);
+		this(canvas, startx, starty, endx, endy);
 		
-		this.startx = startx;
-		this.starty = starty;
-		this.endx 	= endx;
-		this.endy 	= endy;
 		this.type 	= type;
 		this.color 	= color;
 		
@@ -93,36 +89,34 @@ public class GmmlLineShape extends GmmlGraphicsLine
 	 * @param canvas - the GmmlDrawing this GmmlLineShape will be part of
 	 */
 	public GmmlLineShape(Element e, GmmlDrawing canvas) {
-		this(canvas);
+		this(canvas, 0, 0, 0, 0);
 		
-		this.jdomElement = e;
+		this.gdata.jdomElement = e;
 		mapAttributes(e);
+		gdata.mapLineData();
+		gdata.mapColor();
 	}
 	
 	/**
 	 * Updates the JDom representation of this lineshape
 	 */
 	public void updateJdomElement() {
-		if(jdomElement != null) {
-			jdomElement.setAttribute("Notes", notes);
-			jdomElement.setAttribute("Type", (String)typeMappings.get(type));
-			Element jdomGraphics = jdomElement.getChild("Graphics");
+		if(gdata.jdomElement != null) {
+			gdata.jdomElement.setAttribute("Notes", notes);
+			gdata.jdomElement.setAttribute("Type", (String)typeMappings.get(type));
+			Element jdomGraphics = gdata.jdomElement.getChild("Graphics");
 			if(jdomGraphics !=null) {
-				jdomGraphics.setAttribute("StartX", Integer.toString((int)startx * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("StartY", Integer.toString((int)starty * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("EndX", Integer.toString((int)endx * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("EndY", Integer.toString((int)endy * GmmlData.GMMLZOOM));
 				jdomGraphics.setAttribute("Color", ColorConverter.color2HexBin(color));
 			}
 		}
 	}
 	
 	protected void createJdomElement(Document doc) {
-		if(jdomElement == null) {
-			jdomElement = new Element("LineShape");
-			jdomElement.addContent(new Element("Graphics"));
+		if(gdata.jdomElement == null) {
+			gdata.jdomElement = new Element("LineShape");
+			gdata.jdomElement.addContent(new Element("Graphics"));
 			
-			doc.getRootElement().addContent(jdomElement);
+			doc.getRootElement().addContent(gdata.jdomElement);
 		}
 	}
 	
@@ -141,7 +135,12 @@ public class GmmlLineShape extends GmmlGraphicsLine
 		buffer.setBackground (c);
 		buffer.setLineStyle (SWT.LINE_SOLID);
 		buffer.setLineWidth (1);
-			
+		
+		double endx = gdata.getEndX();
+		double endy = gdata.getEndY();
+		double startx = gdata.getStartX();
+		double starty = gdata.getStartY();
+
 		double s = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy - starty)*(endy - starty)));
 		
 		if (type == TYPE_TBAR)
@@ -250,6 +249,11 @@ public class GmmlLineShape extends GmmlGraphicsLine
 	
 	protected Polygon getOutline()
 	{
+		double endx = gdata.getEndX();
+		double endy = gdata.getEndY();
+		double startx = gdata.getStartX();
+		double starty = gdata.getStartY();
+
 		double s  = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy-starty)*(endy-starty)))/8;
 		
 		int[] x = new int[4];
@@ -277,8 +281,8 @@ public class GmmlLineShape extends GmmlGraphicsLine
 			propItems = new Hashtable();
 		}
 		
-		Object[] values = new Object[] {startx, starty, 
-				 endx, endy, type, color, notes};
+		Object[] values = new Object[] {	gdata.getStartX(), gdata.getStartY(), 
+				 gdata.getEndX(), gdata.getEndY(), type, color, notes};
 		
 		for (int i = 0; i < attributes.size(); i++)
 		{
@@ -290,10 +294,10 @@ public class GmmlLineShape extends GmmlGraphicsLine
 	{
 		markDirty();
 		
-		startx		= (Double)propItems.get(attributes.get(0));
-		starty		= (Double)propItems.get(attributes.get(1));
-		endx		= (Double)propItems.get(attributes.get(2));
-		endy		= (Double)propItems.get(attributes.get(3));
+		gdata.setStartX ((Double)propItems.get(attributes.get(0)));
+		gdata.setStartY ((Double)propItems.get(attributes.get(1)));
+		gdata.setEndX ((Double)propItems.get(attributes.get(2)));
+		gdata.setEndY ((Double)propItems.get(attributes.get(3)));
 		type		= (Integer)propItems.get(attributes.get(4));
 		color 		= (RGB)propItems.get(attributes.get(5));
 		notes		= (String)propItems.get(attributes.get(6));
@@ -316,13 +320,13 @@ public class GmmlLineShape extends GmmlGraphicsLine
 			String value = at.getValue();
 			switch(index) {
 					case 0: // StartX
-						this.startx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						break;
 					case 1: // StartY
-						this.starty = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						break;
 					case 2: // EndX
-						this.endx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						break;
 					case 3: // EndY
-						this.endy = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						break;
 					case 4: // Type
 						if(typeMappings.indexOf(value) > -1)
 							this.type = typeMappings.indexOf(value);

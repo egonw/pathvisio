@@ -20,14 +20,6 @@ import data.GmmlData;
  */
 public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	
-	//Internal coordinates
-	double startX;
-	double startY;
-	double width;
-	double height;
-	
-	double rotation; //in radians
-	
 	//Side handles
 	GmmlHandle handleN;
 	GmmlHandle handleE;
@@ -67,19 +59,19 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	 * Get the x-coördinate of the center point of this object
 	 * @return the center x-coördinate as integer
 	 */
-	public int getCenterX() { return (int)(startX + width/2); }
+	public int getCenterX() { return (int)gdata.getCenterX(); }
 
 	/**
 	 * Get the y-coördinate of the center point of this object
 	 * @return the center y-coördinate as integer
 	 */
-	public int getCenterY() { return (int)(startY + height/2); }
+	public int getCenterY() { return (int)gdata.getCenterY(); }
 	
 	public void moveBy(double dx, double dy)
 	{
 		markDirty();
-		startX += dx; 
-		startY += dy;
+		gdata.setLeft(gdata.getLeft() + dx); 
+		gdata.setTop(gdata.getTop() + dy);
 		markDirty();
 		setHandleLocation();		
 	}
@@ -88,18 +80,18 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 		markDirty();
 		
 		//Scale object
-		width = r.width;
-		height = r.height;
+		gdata.setWidth (r.width);
+		gdata.setHeight (r.height);
 		//Translate object
-		startX = r.x;
-		startY = r.y;
+		gdata.setLeft(r.x);
+		gdata.setTop(r.y);
 		
 		setHandleLocation();
 		markDirty();
 	}
 
 	protected Rectangle2D.Double getScaleRectangle() {
-		return new Rectangle2D.Double(startX, startY, width, height);
+		return new Rectangle2D.Double(gdata.getLeft(), gdata.getTop(), gdata.getWidth(), gdata.getHeight());
 	}
 	
 	public GmmlHandle[] getHandles()
@@ -133,7 +125,7 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	 */
 	private Point toInternal(Point p) {
 		Point pt = relativeToCenter(p);
-		Point pr = LinAlg.rotate(pt, -rotation);
+		Point pr = LinAlg.rotate(pt, -gdata.getRotation());
 		return pr;
 	}
 	
@@ -143,7 +135,7 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	 * @param Point p
 	 */
 	private Point toExternal(Point p) {
-		Point pr = LinAlg.rotate(p, rotation);
+		Point pr = LinAlg.rotate(p, gdata.getRotation());
 		Point pt = relativeToCanvas(pr);
 		return pt;
 	}
@@ -184,7 +176,7 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	 * @return
 	 */
 	public Point getCenter() {
-		return new Point(startX + width/2, startY + height/2);
+		return new Point(gdata.getCenterX(), gdata.getCenterY());
 	}
 	
 	/**
@@ -192,7 +184,7 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	 * @param cn
 	 */
 	public void setCenter(Point cn) {
-		startX = cn.x - width/2;
+		gdata.setCenterX(cn.x);
 		startY = cn.y - height/2;
 	}
 	
@@ -453,7 +445,7 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 		Rectangle bounds = getOutline().getBounds();
 		if(this instanceof GmmlLabel) {
 			GC gc = new GC(canvas);
-			org.eclipse.swt.graphics.Point p = gc.textExtent(((GmmlLabel)this).text);
+			org.eclipse.swt.graphics.Point p = gc.textExtent(((GmmlLabel)this).getLabelText());
 			Point c = getCenter();
 			bounds.add(new Rectangle2D.Double(c.x - p.x/2, c.y - p.y/2, c.x + p.x/2, c.y + p.y/2)); 
 		}

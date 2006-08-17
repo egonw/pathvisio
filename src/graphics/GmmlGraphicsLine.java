@@ -10,17 +10,18 @@ import java.awt.geom.Rectangle2D;
 public abstract class GmmlGraphicsLine extends GmmlGraphics {
 	GmmlHandle handleStart;
 	GmmlHandle handleEnd;
-	
-	double startx;
-	double starty;
-	double endx;
-	double endy;
-		
-	public GmmlGraphicsLine(GmmlDrawing canvas) {
+		 
+	public GmmlGraphicsLine(GmmlDrawing canvas, double startx, double starty, double endx, double endy) 
+	{
 		super(canvas);
 		
 		handleStart	= new GmmlHandle(GmmlHandle.DIRECTION_FREE, this, canvas);
 		handleEnd	= new GmmlHandle(GmmlHandle.DIRECTION_FREE, this, canvas);
+		
+		gdata.setStartX(startx);
+		gdata.setStartY(starty);
+		gdata.setEndX(endx);
+		gdata.setEndY(endy);		
 	}
 	
 	/**
@@ -28,7 +29,7 @@ public abstract class GmmlGraphicsLine extends GmmlGraphics {
 	 */
 	public Line2D getLine()
 	{
-		return new Line2D.Double(startx, starty, endx, endy);
+		return new Line2D.Double(gdata.getStartX(), gdata.getStartY(), gdata.getEndX(), gdata.getEndY());
 	}
 	
 	/**
@@ -41,27 +42,28 @@ public abstract class GmmlGraphicsLine extends GmmlGraphics {
 	 */
 	public void setLine(double x1, double y1, double x2, double y2)
 	{
-		startx = x1;
-		starty = y1;
-		endx   = x2;
-		endy   = y2;
+		gdata.setStartX(x1);
+		gdata.setStartY(y1);
+		gdata.setEndX(x2);
+		gdata.setEndY(y2);
 		
 		setHandleLocation();		
 	}
 	
 	public void setScaleRectangle(Rectangle2D.Double r) {
 		markDirty();
-		startx = r.x;
-		starty = r.y;
-		endx = r.x + r.width;
-		endy = r.y + r.height;
+		gdata.setStartX(r.x);
+		gdata.setStartY(r.y);
+		gdata.setEndY (r.x + r.width);
+		gdata.setEndY (r.y + r.height);
 		
 		setHandleLocation();
 		markDirty();
 	}
 	
 	protected Rectangle2D.Double getScaleRectangle() {
-		return new Rectangle2D.Double(startx, starty, endx - startx, endy - starty);
+		return new Rectangle2D.Double(gdata.getStartX(), gdata.getStartY(), gdata.getEndX()
+				- gdata.getStartX(), gdata.getEndY() - gdata.getStartY());
 	}
 	
 	/**
@@ -69,8 +71,8 @@ public abstract class GmmlGraphicsLine extends GmmlGraphics {
 	 */
 	protected void setHandleLocation()
 	{
-		handleStart.setLocation(startx, starty);
-		handleEnd.setLocation(endx, endy);
+		handleStart.setLocation(gdata.getStartX(), gdata.getStartY());
+		handleEnd.setLocation(gdata.getEndX(), gdata.getEndY());
 	}
 	
 	public GmmlHandle[] getHandles()
@@ -81,12 +83,12 @@ public abstract class GmmlGraphicsLine extends GmmlGraphics {
 	protected void adjustToHandle(GmmlHandle h) {
 		markDirty();
 		if		(h == handleStart) {
-			startx = h.centerx; 
-			starty = h.centery;
+			gdata.setStartX(h.centerx); 
+			gdata.setStartY(h.centery);
 		}
 		else if	(h == handleEnd) {
-			endx = h.centerx;
-			endy = h.centery;
+			gdata.setEndX(h.centerx); 
+			gdata.setEndY(h.centery);
 		}
 		markDirty();
 	}
@@ -94,17 +96,18 @@ public abstract class GmmlGraphicsLine extends GmmlGraphics {
 	protected void moveBy(double dx, double dy)
 	{
 		markDirty();
-		setLine(startx + dx, starty + dy, endx + dx, endy + dy);
+		setLine(gdata.getStartX() + dx, gdata.getStartY() + dy, 
+				gdata.getEndX() + dx, gdata.getEndY() + dy);
 		markDirty();		
 		setHandleLocation();
 	}
 	
 	protected void adjustToZoom(double factor)
 	{
-		startx	*= factor;
-		starty	*= factor;
-		endx 	*= factor;
-		endy	*= factor;
+		gdata.setStartX(gdata.getStartX() * factor);
+		gdata.setStartY(gdata.getStartY() * factor);
+		gdata.setEndX(gdata.getEndX() * factor);
+		gdata.setEndY(gdata.getEndY() * factor);
 		
 		setHandleLocation();
 	}

@@ -90,7 +90,7 @@ public class GmmlShape extends GmmlGraphicsShape
 	public GmmlShape(Element e, GmmlDrawing canvas) {
 		this(canvas);
 		
-		jdomElement = e;
+		gdata.jdomElement = e;
 		mapAttributes(e);
 		
 		calcStart();
@@ -101,10 +101,10 @@ public class GmmlShape extends GmmlGraphicsShape
 	 * Updates the JDom representation of the GMML file. 
 	 */
 	public void updateJdomElement() {
-		if(jdomElement != null) {
-			jdomElement.setAttribute("Type", (String)typeMappings.get(type));
-			jdomElement.setAttribute("Notes", notes);
-			Element jdomGraphics = jdomElement.getChild("Graphics");
+		if(gdata.jdomElement != null) {
+			gdata.jdomElement.setAttribute("Type", (String)typeMappings.get(type));
+			gdata.jdomElement.setAttribute("Notes", notes);
+			Element jdomGraphics = gdata.jdomElement.getChild("Graphics");
 			if(jdomGraphics !=null) {
 				jdomGraphics.setAttribute("CenterX", Integer.toString(getCenterX() * GmmlData.GMMLZOOM));
 				jdomGraphics.setAttribute("CenterY", Integer.toString(getCenterY() * GmmlData.GMMLZOOM));
@@ -117,12 +117,12 @@ public class GmmlShape extends GmmlGraphicsShape
 	}
 
 	protected void createJdomElement(Document doc) {
-		if(jdomElement == null) {
-			jdomElement = new Element("Shape");
-			jdomElement.setAttribute("Type", (String)typeMappings.get(type));
-			jdomElement.addContent(new Element("Graphics"));
+		if(gdata.jdomElement == null) {
+			gdata.jdomElement = new Element("Shape");
+			gdata.jdomElement.setAttribute("Type", (String)typeMappings.get(type));
+			gdata.jdomElement.addContent(new Element("Graphics"));
 			
-			doc.getRootElement().addContent(jdomElement);
+			doc.getRootElement().addContent(gdata.jdomElement);
 		}
 	}
 	

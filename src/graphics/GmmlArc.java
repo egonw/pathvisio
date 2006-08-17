@@ -83,7 +83,7 @@ public class GmmlArc extends GmmlGraphicsShape
 	 */
 	public GmmlArc(Element e, GmmlDrawing canvas) {
 		this(canvas);
-		this.jdomElement = e;
+		gdata.jdomElement = e;
 		
 		mapAttributes(e);
 				
@@ -94,9 +94,9 @@ public class GmmlArc extends GmmlGraphicsShape
 	 * Updates the JDom representation of this arc
 	 */
 	public void updateJdomElement() {
-		if(jdomElement != null) {
-			jdomElement.setAttribute("Notes", notes);
-			Element jdomGraphics = jdomElement.getChild("Graphics");
+		if(gdata.jdomElement != null) {
+			gdata.jdomElement.setAttribute("Notes", notes);
+			Element jdomGraphics = gdata.jdomElement.getChild("Graphics");
 			if(jdomGraphics != null) {
 				jdomGraphics.setAttribute("StartX", Integer.toString((int)startX * GmmlData.GMMLZOOM));
 				jdomGraphics.setAttribute("StartY", Integer.toString((int)startY * GmmlData.GMMLZOOM));
@@ -109,11 +109,11 @@ public class GmmlArc extends GmmlGraphicsShape
 	}
 
 	protected void createJdomElement(Document doc) {
-		if(jdomElement == null) {
-			jdomElement = new Element("Arc");
-			jdomElement.addContent(new Element("Graphics"));
+		if(gdata.jdomElement == null) {
+			gdata.jdomElement = new Element("Arc");
+			gdata.jdomElement.addContent(new Element("Graphics"));
 			
-			doc.getRootElement().addContent(jdomElement);
+			doc.getRootElement().addContent(gdata.jdomElement);
 		}
 	}
 	
@@ -228,13 +228,13 @@ public class GmmlArc extends GmmlGraphicsShape
 			String value = at.getValue();
 			switch(index) {
 					case 0: // StartX
-						this.startX = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						this.startX = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
 					case 1: // StartY
-						this.startY = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						this.startY = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
 					case 2: // Width
-						setGmmlWidth(Integer.parseInt(value) / GmmlData.GMMLZOOM); break;
+						setGmmlWidth(Double.parseDouble(value) / GmmlData.GMMLZOOM); break;
 					case 3: // Height
-						setGmmlHeight(Integer.parseInt(value) / GmmlData.GMMLZOOM); break;
+						setGmmlHeight(Double.parseDouble(value) / GmmlData.GMMLZOOM); break;
 					case 4: // Color
 						this.color = ColorConverter.gmmlString2Color(value); break;
 					case 5: // Rotation

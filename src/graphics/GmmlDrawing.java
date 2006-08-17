@@ -32,7 +32,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jdom.Document;
 import org.jdom.Element;
 
-import data.GmmlGex;
+import data.*;
 import data.GmmlGex.Sample;
 import data.GmmlGex.CachedData.Data;
 
@@ -569,32 +569,32 @@ PaintListener, MouseTrackListener, KeyListener
 		case NEWLINE:
 			g = new GmmlLine(e.x, e.y, e.x, e.y,stdRGB, this, d);
 			GmmlLine l = (GmmlLine)g;
-			l.style = GmmlLine.STYLE_SOLID;
-			l.type = GmmlLine.TYPE_LINE;
+			l.gdata.setLineStyle (LineStyle.SOLID);
+			l.gdata.setLineType (LineType.LINE);
 			h = l.handleEnd;
 			isDragging = true;
 			break;
 		case NEWLINEARROW:
 			g = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
 			l = (GmmlLine)g;
-			l.style = GmmlLine.STYLE_SOLID;
-			l.type = GmmlLine.TYPE_ARROW;
+			l.gdata.setLineStyle (LineStyle.SOLID);
+			l.gdata.setLineType (LineType.ARROW);
 			h = l.handleEnd;
 			isDragging = true;
 			break;
 		case NEWLINEDASHED:
 			g = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
 			l = (GmmlLine)g;
-			l.style = GmmlLine.STYLE_DASHED;
-			l.type = GmmlLine.TYPE_LINE;
+			l.gdata.setLineStyle (LineStyle.DASHED);
+			l.gdata.setLineType (LineType.LINE);
 			h = l.handleEnd;
 			isDragging = true;
 			break;
 		case NEWLINEDASHEDARROW:
 			g = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
 			l = (GmmlLine)g;
-			l.style = GmmlLine.STYLE_DASHED;
-			l.type = GmmlLine.TYPE_ARROW;
+			l.gdata.setLineStyle (LineStyle.DASHED);
+			l.gdata.setLineType (LineType.ARROW);
 			h = l.handleEnd;
 			isDragging = true;
 			break;

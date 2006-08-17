@@ -17,10 +17,6 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 
-	<xsd:annotation>
-		<xsd:documentation xml:lang="en">GenMAPP ID</xsd:documentation>
-	</xsd:annotation>
-
 	<xsd:simpleType name="ShortNameType">
 		<xsd:restriction base="xsd:string">
 			<xsd:maxLength value="20" fixed="true"/>
@@ -33,26 +29,7 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 
-	<xsd:simpleType name="NoteType">
-		<xsd:restriction base="xsd:string"/>
-	</xsd:simpleType>
-
-	<xsd:simpleType name="CommentType">
-		<xsd:restriction base="xsd:string">
-			<xsd:maxLength value="224"/>
-		</xsd:restriction>
-	</xsd:simpleType>
-
 	<xsd:complexType name="BaseElement">
-	</xsd:complexType>
-
-	<xsd:complexType name="NamedBaseElement">
-		<xsd:complexContent>
-			<xsd:extension base="BaseElement">
-				<xsd:attribute name="Name" type="NameType" use="required">
-				</xsd:attribute>
-			</xsd:extension>
-		</xsd:complexContent>
 	</xsd:complexType>
 
 	<xsd:simpleType name="ColorType">
@@ -80,6 +57,7 @@
 					<xsd:enumeration value="Yellow"/>
 				</xsd:restriction>
 			</xsd:simpleType>
+			<!-- TODO: change -1 to string "transparent" -->
 			<!-- include integer consideration for at least shape type Oval, with
 			color '-1' -->
 			<xsd:simpleType>
@@ -89,11 +67,8 @@
 	</xsd:simpleType>
 
 	<xsd:simpleType name="Dimension">
-		<xsd:restriction base="xsd:nonNegativeInteger"/>
-	</xsd:simpleType>
-
-	<xsd:simpleType name="Coordinate">
-		<xsd:restriction base="xsd:nonNegativeInteger"/>
+		<xsd:restriction base="xsd:float"/>
+		<!-- TODO: must also be nonnegative -->
 	</xsd:simpleType>
 
 	<xsd:simpleType name="GeneProductDataSourceType">
@@ -143,7 +118,7 @@
 
 			<xsd:sequence>
 
-				<xsd:element name="Notes" type="NoteType" minOccurs="0"
+				<xsd:element name="Notes" type="xsd:string" minOccurs="0"
 					maxOccurs="1">
 					<xsd:annotation>
 						<xsd:documentation xml:lang="en">Pathway Notes appear in the
@@ -152,7 +127,7 @@
 					</xsd:annotation>
 				</xsd:element>
 
-				<xsd:element name="Comment" type="CommentType" minOccurs="0"
+				<xsd:element name="Comment" type="xsd:string" minOccurs="0"
 				maxOccurs="1">
 					<xsd:annotation>
 						<xsd:documentation xml:lang="en">Pathway Comments appear in the
@@ -170,17 +145,17 @@
 								the coordinates of the GenMAPP drawing board, and Map
 								Information Area.</xsd:documentation>
 						</xsd:annotation>
-						<xsd:attribute name="BoardWidth" type="Coordinate"
+						<xsd:attribute name="BoardWidth" type="xsd:float"
 							use="required"/>
-						<xsd:attribute name="BoardHeight" type="Coordinate"
+						<xsd:attribute name="BoardHeight" type="xsd:float"
 							use="required"/>
-						<xsd:attribute name="WindowWidth" type="Coordinate"
+						<xsd:attribute name="WindowWidth" type="xsd:float"
 							use="required"/>
-						<xsd:attribute name="WindowHeight" type="Coordinate"
+						<xsd:attribute name="WindowHeight" type="xsd:float"
 							use="required"/>
-						<xsd:attribute name="MapInfoLeft" type="Coordinate"
+						<xsd:attribute name="MapInfoLeft" type="xsd:float"
 							use="optional" default="0"/>
-						<xsd:attribute name="MapInfoTop" type="Coordinate"
+						<xsd:attribute name="MapInfoTop" type="xsd:float"
 							use="optional" default="0"/>
 					</xsd:complexType>
 				</xsd:element>
@@ -190,10 +165,6 @@
 
 				<xsd:element ref="Line" minOccurs="0" maxOccurs="unbounded"/>
 
-				<xsd:element ref="LineShape" minOccurs="0" maxOccurs="unbounded"/>
-
-				<xsd:element ref="Arc" minOccurs="0" maxOccurs="unbounded"/>
-
 				<xsd:element ref="Label" minOccurs="0" maxOccurs="unbounded"/>
 
 				<xsd:element ref="Shape" minOccurs="0" maxOccurs="unbounded"/>
@@ -202,15 +173,13 @@
 
 				<xsd:element ref="CellShape" minOccurs="0" maxOccurs="unbounded"/>
 
-				<xsd:element ref="CellComponentShape" minOccurs="0"
-					maxOccurs="unbounded"/>
+				<xsd:element ref="CellComponentShape" minOccurs="0" maxOccurs="unbounded"/>
 
-				<xsd:element ref="ProteinComplexShape" minOccurs="0"
-					maxOccurs="unbounded"/>
+				<xsd:element ref="ComplexShape" minOccurs="0" maxOccurs="unbounded"/>
 
-				<!-- note: converter doesn't currently generate this required element, commented out !-->
 				<xsd:element ref="InfoBox" minOccurs="1" maxOccurs="1" />
-
+				
+				<xsd:element ref="Legend" minOccurs="1" maxOccurs="1"/>
 			</xsd:sequence>
 
 			<xsd:attribute name="Name" type="NameType" use="required">
@@ -282,11 +251,11 @@
 
 		<xsd:complexType>
 			<xsd:complexContent>
-				<xsd:extension base="NamedBaseElement">
+				<xsd:extension base="BaseElement">
 
 					<xsd:sequence>
 
-						<xsd:element name="Notes" type="NoteType" minOccurs="0"
+						<xsd:element name="Notes" type="xsd:string" minOccurs="0"
 							maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation xml:lang="en">Text from Notes is not
@@ -294,7 +263,7 @@
 							</xsd:annotation>
 						</xsd:element>
 
-						<xsd:element name="Comment" type="CommentType" minOccurs="0"
+						<xsd:element name="Comment" type="xsd:string" minOccurs="0"
 							maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation xml:lang="en">Text from Comments is
@@ -304,9 +273,9 @@
 
 						<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
 							<xsd:complexType>
-								<xsd:attribute name="CenterX" type="Coordinate"
+								<xsd:attribute name="CenterX" type="xsd:float"
 									use="required"/>
-								<xsd:attribute name="CenterY" type="Coordinate"
+								<xsd:attribute name="CenterY" type="xsd:float"
 									use="required"/>
 								<xsd:attribute name="Width" default="600"
 									type="Dimension"/>
@@ -317,6 +286,13 @@
 
 
 					</xsd:sequence>
+
+
+					<xsd:attribute name="Name" type="NameType" use="required">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">GenMAPP ID</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
 
 					<xsd:attribute name="GeneProduct-Data-Source"
 							type="GeneProductDataSourceType" use="required">
@@ -386,7 +362,6 @@
 	</xsd:element>
 <!-- End: GeneProduct -->
 
-
 <!-- Line -->
 	<xsd:element name="Line">
 
@@ -396,7 +371,7 @@
 
 					<xsd:sequence>
 
-						<xsd:element name="Notes" type="NoteType" minOccurs="0"
+						<xsd:element name="Notes" type="xsd:string" minOccurs="0"
 							maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation xml:lang="en">Text from Notes is not
@@ -404,7 +379,7 @@
 							</xsd:annotation>
 						</xsd:element>
 
-						<xsd:element name="Comment" type="CommentType" minOccurs="0"
+						<xsd:element name="Comment" type="xsd:string" minOccurs="0"
 							maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation xml:lang="en">GenMAPP line comments
@@ -416,10 +391,10 @@
 
 						<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
 							<xsd:complexType>
-								<xsd:attribute name="StartX" type="Coordinate"/>
-								<xsd:attribute name="StartY" type="Coordinate"/>
-								<xsd:attribute name="EndX" type="Coordinate"/>
-								<xsd:attribute name="EndY" type="Coordinate"/>
+								<xsd:attribute name="StartX" type="xsd:float"/>
+								<xsd:attribute name="StartY" type="xsd:float"/>
+								<xsd:attribute name="EndX" type="xsd:float"/>
+								<xsd:attribute name="EndY" type="xsd:float"/>
 								<xsd:attribute name="Color" type="ColorType"
 									default="Black"/>
 							</xsd:complexType>
@@ -432,6 +407,12 @@
 							<xsd:restriction base="xsd:string">
 								<xsd:enumeration value="Line"/>
 								<xsd:enumeration value="Arrow"/>
+								<xsd:enumeration value="Receptor"/>
+								<xsd:enumeration value="ReceptorRound"/>
+								<xsd:enumeration value="ReceptorSquare"/>
+								<xsd:enumeration value="LigandRound"/>
+								<xsd:enumeration value="LigandSquare"/>
+								<xsd:enumeration value="Tbar"/>
 							</xsd:restriction>
 						</xsd:simpleType>
 					</xsd:attribute>
@@ -452,125 +433,6 @@
 	</xsd:element>
 <!-- End: Line -->
 
-
-<!-- LineShape -->
-	<xsd:element name="LineShape">
-
-		<xsd:annotation>
-			<xsd:documentation xml:lang="en">In GenMAPP these shapes represent
-				receptors, ligands, and inhibition (tbar). Note these are similar to
-				Lines but do not have a line style.</xsd:documentation>
-		</xsd:annotation>
-
-		<xsd:complexType>
-			<xsd:complexContent>
-				<xsd:extension base="BaseElement">
-
-					<xsd:sequence>
-
-						<xsd:element name="Notes" type="NoteType" minOccurs="0"
-							maxOccurs="1">
-							<xsd:annotation>
-								<xsd:documentation xml:lang="en">Text from Notes is not
-									displayed on GenMAPP map or backpage.</xsd:documentation>
-							</xsd:annotation>
-						</xsd:element>
-
-						<xsd:element name="Comment" type="CommentType" minOccurs="0"
-							maxOccurs="1">
-							<xsd:annotation>
-								<xsd:documentation xml:lang="en">GenMAPP line comments
-									appear when line is right clicked They are currently
-									limited in length to 50 characters and are GenMAPP
-									REMARKS.</xsd:documentation>
-							</xsd:annotation>
-						</xsd:element>
-
-						<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
-							<xsd:complexType>
-								<xsd:attribute name="StartX" type="Coordinate"/>
-								<xsd:attribute name="StartY" type="Coordinate"/>
-								<xsd:attribute name="EndX" type="Coordinate"/>
-								<xsd:attribute name="EndY" type="Coordinate"/>
-								<xsd:attribute name="Color" type="ColorType"/>
-							</xsd:complexType>
-						</xsd:element>
-
-					</xsd:sequence>
-
-					<xsd:attribute name="Type" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:string">
-								<xsd:enumeration value="ReceptorRound"/>
-								<xsd:enumeration value="ReceptorSquare"/>
-								<xsd:enumeration value="LigandRound"/>
-								<xsd:enumeration value="LigandSquare"/>
-								<xsd:enumeration value="Tbar"/>
-							</xsd:restriction>
-						</xsd:simpleType>
-					</xsd:attribute>
-
-				</xsd:extension><!-- End BaseElement -->
-			</xsd:complexContent>
-		</xsd:complexType>
-
-	</xsd:element>
-<!-- End: LineShape -->
-
-
-<!-- Arc -->
-	<xsd:element name="Arc">
-
-		<xsd:complexType>
-			<xsd:complexContent>
-				<xsd:extension base="BaseElement">
-
-					<xsd:sequence>
-
-						<xsd:element name="Notes" type="NoteType" minOccurs="0"
-							maxOccurs="1">
-							<xsd:annotation>
-								<xsd:documentation xml:lang="en">Text from Notes is not
-									displayed on GenMAPP map or backpage.</xsd:documentation>
-							</xsd:annotation>
-						</xsd:element>
-
-						<xsd:element name="Comment" type="CommentType" minOccurs="0"
-							maxOccurs="1">
-							<xsd:annotation>
-								<xsd:documentation xml:lang="en">GenMAPP line comments
-									appear when arc is right clicked They are currently limited
-									in length to 50 characters and are GenMAPP
-									REMARKS.</xsd:documentation>
-							</xsd:annotation>
-						</xsd:element>
-
-						<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
-							<xsd:complexType>
-								<xsd:attribute name="StartX" use="required"
-									type="Coordinate"/>
-								<xsd:attribute name="StartY" use="required"
-									type="Coordinate"/>
-								<xsd:attribute name="Width" use="required"
-									type="Dimension"/>
-								<xsd:attribute name="Height" use="required"
-									type="Dimension"/>
-								<xsd:attribute name="Color" use="optional"
-									type="ColorType"/>
-								<xsd:attribute name="Rotation" type="xsd:decimal"/>
-							</xsd:complexType>
-						</xsd:element>
-
-					</xsd:sequence>
-
-				</xsd:extension><!-- End of BaseElement -->
-			</xsd:complexContent>
-		</xsd:complexType>
-
-	</xsd:element>
-<!-- End: Arc -->
-
-
 <!-- Label -->
 	<xsd:element name="Label">
 
@@ -584,7 +446,7 @@
 
 					<xsd:sequence>
 
-						<xsd:element name="Notes" type="NoteType" minOccurs="0"
+						<xsd:element name="Notes" type="xsd:string" minOccurs="0"
 							maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation xml:lang="en">Text from Notes is not
@@ -592,7 +454,7 @@
 							</xsd:annotation>
 						</xsd:element>
 
-						<xsd:element name="Comment" type="CommentType" minOccurs="0"
+						<xsd:element name="Comment" type="xsd:string" minOccurs="0"
 							maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation xml:lang="en">GenMAPP label comments
@@ -605,9 +467,9 @@
 						<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
 							<xsd:complexType>
 								<xsd:attribute name="CenterX" use="required"
-									type="Coordinate"/>
+									type="xsd:float"/>
 								<xsd:attribute name="CenterY" use="required"
-									type="Coordinate"/>
+									type="xsd:float"/>
 								<xsd:attribute name="Width" use="required"
 									type="Dimension"/>
 								<xsd:attribute name="Height" use="required"
@@ -621,7 +483,21 @@
 										<xsd:restriction base="xsd:string">
 											<xsd:enumeration value="Normal"/>
 											<xsd:enumeration value="Italic"/>
-											<xsd:enumeration value="Underscore"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:attribute>
+								<xsd:attribute name="FontDecoration" default="Normal">
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:enumeration value="Normal"/>
+											<xsd:enumeration value="Underline"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:attribute>
+								<xsd:attribute name="FontStrikethru" default="Normal">
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:enumeration value="Normal"/>
 											<xsd:enumeration value="Strikethru"/>
 										</xsd:restriction>
 									</xsd:simpleType>
@@ -640,7 +516,7 @@
 						</xsd:element>
 
 					</xsd:sequence>
-
+					
 					<xsd:attribute name="TextLabel" use="required"
 						type="xsd:string"/>
 
@@ -665,7 +541,7 @@
 
 					<xsd:sequence>
 
-						<xsd:element name="Notes" type="NoteType" minOccurs="0"
+						<xsd:element name="Notes" type="xsd:string" minOccurs="0"
 							maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation xml:lang="en">Text from Notes is not
@@ -675,12 +551,12 @@
 
 						<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
 							<xsd:complexType>
-								<xsd:attribute name="CenterX" type="Coordinate"/>
-								<xsd:attribute name="CenterY" type="Coordinate"/>
+								<xsd:attribute name="CenterX" type="xsd:float"/>
+								<xsd:attribute name="CenterY" type="xsd:float"/>
 								<xsd:attribute name="Width" type="Dimension"/>
 								<xsd:attribute name="Height" type="Dimension"/>
 								<xsd:attribute name="Color" type="ColorType"/>
-								<xsd:attribute name="Rotation" type="xsd:decimal"/>
+								<xsd:attribute name="Rotation" type="xsd:float"/>
 							</xsd:complexType>
 						</xsd:element>
 
@@ -690,6 +566,7 @@
 						<xsd:simpleType>
 							<xsd:restriction base="xsd:string">
 								<xsd:enumeration value="Rectangle"/>
+								<xsd:enumeration value="Arc"/>
 								<xsd:enumeration value="Oval"/>
 							</xsd:restriction>
 						</xsd:simpleType>
@@ -712,7 +589,7 @@
 
 					<xsd:sequence>
 
-						<xsd:element name="Notes" type="NoteType" minOccurs="0"
+						<xsd:element name="Notes" type="xsd:string" minOccurs="0"
 							maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation xml:lang="en">Text from Notes is not
@@ -722,9 +599,9 @@
 
 						<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
 							<xsd:complexType>
-								<xsd:attribute name="CenterX" type="Coordinate"
+								<xsd:attribute name="CenterX" type="xsd:float"
 									use="required"/>
-								<xsd:attribute name="CenterY" type="Coordinate"
+								<xsd:attribute name="CenterY" type="xsd:float"
 									use="required"/>
 								<xsd:attribute name="Width" type="Dimension"
 									use="required"/>
@@ -779,9 +656,9 @@
 				<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
 					<xsd:complexType>
 						<xsd:attribute name="CenterX" use="required"
-							type="Coordinate"/>
+							type="xsd:float"/>
 						<xsd:attribute name="CenterY" use="required"
-							type="Coordinate"/>
+							type="xsd:float"/>
 						<xsd:attribute name="Width" default="1500" type="Dimension"/>
 						<xsd:attribute name="Height" default="375" type="Dimension"/>
 						<xsd:attribute name="Rotation" fixed="-1.308997" type="xsd:float"/>
@@ -811,9 +688,9 @@
 
 				<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
 					<xsd:complexType>
-						<xsd:attribute name="CenterX" type="Coordinate"
+						<xsd:attribute name="CenterX" type="xsd:float"
 							use="required"/>
-						<xsd:attribute name="CenterY" type="Coordinate"
+						<xsd:attribute name="CenterY" type="xsd:float"
 							use="required"/>
 					</xsd:complexType>
 				</xsd:element>
@@ -837,13 +714,13 @@
 <!-- End: CellComponentShape -->
 
 
-<!-- ProteinComponentShape -->
-	<xsd:element name="ProteinComplexShape">
+<!-- ComplexShape -->
+	<xsd:element name="ComplexShape">
 
 		<xsd:complexType>
 			<xsd:sequence>
 
-				<xsd:element name="Notes" type="NoteType" minOccurs="0"
+				<xsd:element name="Notes" type="xsd:string" minOccurs="0"
 					maxOccurs="1">
 					<xsd:annotation>
 						<xsd:documentation xml:lang="en">Text from Notes is not
@@ -853,17 +730,31 @@
 
 				<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
 					<xsd:complexType>
-						<xsd:attribute name="CenterX" type="Coordinate"
+						<xsd:attribute name="CenterX" type="xsd:float"
 							use="required"/>
-						<xsd:attribute name="CenterY" type="Coordinate"
+						<xsd:attribute name="CenterY" type="xsd:float"
 							use="required"/>
-						<xsd:attribute name="Width" type="Dimension" default="300"/>
+						<xsd:attribute name="Width" type="xsd:float" use="required"/>
+						<xsd:attribute name="Rotation" type="xsd:float" default="0"/>
 					</xsd:complexType>
 				</xsd:element>
 			</xsd:sequence>
+			
+			<xsd:attribute name="Type" use="required">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="Hexagon"/>
+						<xsd:enumeration value="Pentagon"/>
+						<xsd:enumeration value="Triangle"/>
+						<xsd:enumeration value="Vesicle"/>
+						<xsd:enumeration value="ProteinComplex"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:attribute>
+
 		</xsd:complexType>
 	</xsd:element>
-<!-- End: ProteinShape -->
+<!-- End: ComplexShape -->
 
 <!-- InfoBox -->
 	<xsd:element name="InfoBox">
@@ -875,13 +766,21 @@
 		</xsd:annotation>
 	
 		<xsd:complexType>
-			<xsd:attribute name="CenterX" type="Coordinate" use="optional"
-				default="0"/>
-			<xsd:attribute name="CenterY" type="Coordinate" use="optional"
-				default="0"/>
+			<xsd:attribute name="CenterX" type="xsd:float" use="required"/>
+			<xsd:attribute name="CenterY" type="xsd:float" use="required"/>
 		</xsd:complexType>
 	</xsd:element>
 <!-- End: InfoBox -->
+
+<!-- Legend -->
+	<xsd:element name="Legend">
+	
+		<xsd:complexType>
+			<xsd:attribute name="CenterX" type="xsd:float" use="required"/>
+			<xsd:attribute name="CenterY" type="xsd:float" use="required"/>
+		</xsd:complexType>
+	</xsd:element>
+<!-- End: Legend -->
 
 <!--
 vim:ts=2: 

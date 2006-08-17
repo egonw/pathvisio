@@ -93,7 +93,7 @@ public class GmmlBrace extends GmmlGraphicsShape
 	public GmmlBrace(Element e, GmmlDrawing canvas) {
 		this(canvas);
 		
-		this.jdomElement = e;
+		gdata.jdomElement = e;
 		
 		mapAttributes(e);
 		
@@ -126,9 +126,9 @@ public class GmmlBrace extends GmmlGraphicsShape
 	 * Updates the JDom representation of this arc
 	 */
 	public void updateJdomElement() {
-		if(jdomElement != null) {
-			jdomElement.setAttribute("Notes", notes);
-			Element jdomGraphics = jdomElement.getChild("Graphics");
+		if(gdata.jdomElement != null) {
+			gdata.jdomElement.setAttribute("Notes", notes);
+			Element jdomGraphics = gdata.jdomElement.getChild("Graphics");
 			if(jdomGraphics !=null) {
 				jdomGraphics.setAttribute("CenterX", Integer.toString(getCenterX() * GmmlData.GMMLZOOM));
 				jdomGraphics.setAttribute("CenterY", Integer.toString(getCenterY() * GmmlData.GMMLZOOM));
@@ -141,11 +141,11 @@ public class GmmlBrace extends GmmlGraphicsShape
 	}
 	
 	protected void createJdomElement(Document doc) {
-		if(jdomElement == null) {
-			jdomElement = new Element("Brace");
-			jdomElement.addContent(new Element("Graphics"));
+		if(gdata.jdomElement == null) {
+			gdata.jdomElement = new Element("Brace");
+			gdata.jdomElement.addContent(new Element("Graphics"));
 			
-			doc.getRootElement().addContent(jdomElement);
+			doc.getRootElement().addContent(gdata.jdomElement);
 		}
 	}
 	
@@ -256,11 +256,11 @@ public class GmmlBrace extends GmmlGraphicsShape
 			String value = at.getValue();
 			switch(index) {
 					case 0: // CenterX
-						centerX = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						centerX = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
 					case 1: // CenterY
-						centerY = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						centerY = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
 					case 2: // Width
-						setGmmlWidth(Integer.parseInt(value) / GmmlData.GMMLZOOM); break;
+						setGmmlWidth(Double.parseDouble(value) / GmmlData.GMMLZOOM); break;
 					case 3: // PicPointOffset
 						setGmmlHeight(Double.parseDouble(value) / GmmlData.GMMLZOOM); break;
 					case 4: // Orientation

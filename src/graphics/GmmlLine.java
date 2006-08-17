@@ -24,7 +24,7 @@ import org.jdom.Element;
 
 import util.ColorConverter;
 import util.SwtUtils;
-import data.GmmlData;
+import data.*;
  
 /**
  * This class implements and handles a line
@@ -32,29 +32,18 @@ import data.GmmlData;
 public class GmmlLine extends GmmlGraphicsLine
 {
 	private static final long serialVersionUID = 1L;
-	
-	public static final int STYLE_SOLID		= 0;
-	public static final int STYLE_DASHED	= 1;
-	
-	public static final int TYPE_LINE	= 0;
-	public static final int TYPE_ARROW	= 1;
-	
+			
 	public final List attributes = Arrays.asList(new String[] {
-			"StartX", "StartY", "EndX", "EndY", "Color", "Style", "Type", "Notes"
+			"StartX", "StartY", "EndX", "EndY", "Color", "Style", "Type", "Notes", "Comment"
 	});
-		
-	int style;
-	int type;
-	RGB color;
-	String notes = "";
 	
 	/**
 	 * Constructor for this class
 	 * @param canvas - the GmmlDrawing this line will be part of
 	 */
-	public GmmlLine(GmmlDrawing canvas)
+	public GmmlLine(GmmlDrawing canvas, double startx, double starty, double endx, double endy)
 	{
-		super(canvas);
+		super(canvas, startx, starty, endx, endy);
 		drawingOrder = GmmlDrawing.DRAW_ORDER_LINE;
 	}
 	
@@ -69,14 +58,9 @@ public class GmmlLine extends GmmlGraphicsLine
 	 */
 	public GmmlLine(double startx, double starty, double endx, double endy, RGB color, GmmlDrawing canvas, Document doc)
 	{
-		this(canvas);
+		this(canvas, startx, starty, endx, endy);
 		
-		this.startx = startx;
-		this.starty = starty;
-		this.endx 	= endx;
-		this.endy 	= endy;
-		
-		this.color = color;
+		gdata.setColor (color);
 		
 		setHandleLocation();
 		
@@ -89,12 +73,15 @@ public class GmmlLine extends GmmlGraphicsLine
 	 * @param canvas - the GmmlDrawing this GmmlLine will be part of
 	 */
 	public GmmlLine (Element e, GmmlDrawing canvas) {
-		this(canvas);
+		this(canvas, 0, 0, 0, 0);
 		
-		this.jdomElement = e;
+		this.gdata.jdomElement = e;
 
-		mapAttributes(e);
-				
+//		mapAttributes(e);
+		gdata.mapLineData();
+		gdata.mapColor();
+		gdata.mapNotesAndComment();
+		
 		setHandleLocation();
 	}
 
@@ -102,27 +89,15 @@ public class GmmlLine extends GmmlGraphicsLine
 	 * Updates the JDom representation of this label
 	 */	
 	public void updateJdomElement() {
-		if(jdomElement != null) {
-			jdomElement.setAttribute("Notes", notes);
-			jdomElement.setAttribute("Type", type == TYPE_LINE ? "Line" : "Arrow");
-			jdomElement.setAttribute("Style", style == STYLE_SOLID ? "Solid" : "Broken");
-			Element jdomGraphics = jdomElement.getChild("Graphics");
-			if(jdomGraphics != null) {
-				jdomGraphics.setAttribute("StartX", Integer.toString((int)startx * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("StartY", Integer.toString((int)starty * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("EndX", Integer.toString((int)endx * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("EndY", Integer.toString((int)endy * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("Color", ColorConverter.color2HexBin(color));
-			}
+		gdata.updateLineData();
+		if(gdata.jdomElement != null) {
+			gdata.updateNotesAndComment();
+			gdata.updateColor();
 		}
 	}
 	
 	protected void createJdomElement(Document doc) {
-		if(jdomElement == null) {
-			jdomElement = new Element("Line");
-			jdomElement.addContent(new Element("Graphics"));
-			doc.getRootElement().addContent(jdomElement);
-		}
+		gdata.createJdomElement(doc, "Line", true);
 	}
 	
 	protected void draw(PaintEvent e, GC buffer)
@@ -135,24 +110,25 @@ public class GmmlLine extends GmmlGraphicsLine
 		}
 		else 
 		{
-			c = SwtUtils.changeColor(c, this.color, e.display);
+			c = SwtUtils.changeColor(c, gdata.getColor(), e.display);
 		}
 		buffer.setForeground (c);
 		buffer.setBackground (c);
 		
 		buffer.setLineWidth (1);
-		if (style == STYLE_SOLID)
+		int ls = gdata.getLineStyle();
+		if (ls == LineStyle.SOLID)
 		{
 			buffer.setLineStyle (SWT.LINE_SOLID);
 		}
-		else if (style == STYLE_DASHED)
+		else if (ls == LineStyle.DASHED)
 		{ 
 			buffer.setLineStyle (SWT.LINE_DASH);
 		}
 		
 		buffer.drawLine ((int)line.getX1(), (int)line.getY1(), (int)line.getX2(), (int)line.getY2());
 		
-		if (type == TYPE_ARROW)
+		if (gdata.getLineType() == LineType.ARROW)
 		{
 			drawArrowhead(buffer);
 		}
@@ -204,6 +180,11 @@ public class GmmlLine extends GmmlGraphicsLine
 		
 		buffer.setLineStyle (SWT.LINE_SOLID);
 		
+		double endx = gdata.getEndX();
+		double endy = gdata.getEndY();
+		double startx = gdata.getStartX();
+		double starty = gdata.getStartY();
+		
 		a = endx-startx;
 		b = endy-starty;
 		norm = 8/(Math.sqrt((a*a)+(b*b)));				
@@ -235,23 +216,21 @@ public class GmmlLine extends GmmlGraphicsLine
 			String value = at.getValue();
 			switch(index) {
 					case 0: // StartX
-						this.startx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						break;
 					case 1: // StartY
-						this.starty = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						break;
 					case 2: // EndX
-						this.endx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						break;
 					case 3: // EndY
-						this.endy = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						break;
 					case 4: // Color
-						this.color = ColorConverter.gmmlString2Color(value); break;
+						break;
 					case 5: // Style
-						this.style = value.equalsIgnoreCase("Solid") ? STYLE_SOLID : STYLE_DASHED;
 						break;
 					case 6: // Type
-						this.type = value.equalsIgnoreCase("Line") ? TYPE_LINE : TYPE_ARROW;
 						break;
 					case 7: //Notes
-						this.notes = value; break;
+						break;
 					case -1:
 						GmmlVision.log.trace("\t> Attribute '" + at.getName() + "' is not recognized");
 			}
@@ -274,8 +253,12 @@ public class GmmlLine extends GmmlGraphicsLine
 			propItems = new Hashtable();
 		}
 		
-		Object[] values = new Object[] {startx, starty, 
-				 endx, endy, color, style, type, notes};
+		Object[] values = new Object[] {
+				gdata.getStartX(), gdata.getStartY(), 
+				 gdata.getEndX(), gdata.getEndY(), 
+				 gdata.getColor(), 
+				 gdata.getLineStyle(), gdata.getLineType(), 
+				 gdata.getNotes(), gdata.getComment()};
 		
 		for (int i = 0; i < attributes.size(); i++)
 		{
@@ -287,14 +270,15 @@ public class GmmlLine extends GmmlGraphicsLine
 	{
 		markDirty();
 		
-		startx		= (Double)propItems.get(attributes.get(0));
-		starty		= (Double)propItems.get(attributes.get(1));
-		endx		= (Double)propItems.get(attributes.get(2));
-		endy		= (Double)propItems.get(attributes.get(3));
-		color 		= (RGB)propItems.get(attributes.get(4));
-		style		= (Integer)propItems.get(attributes.get(5));
-		type		= (Integer)propItems.get(attributes.get(6));
-		notes		= (String)propItems.get(attributes.get(7));
+		gdata.setStartX ((Double)propItems.get(attributes.get(0)));
+		gdata.setStartY ((Double)propItems.get(attributes.get(1)));
+		gdata.setEndX ((Double)propItems.get(attributes.get(2)));
+		gdata.setEndY ((Double)propItems.get(attributes.get(3)));
+		gdata.setColor ((RGB)propItems.get(attributes.get(4)));
+		gdata.setLineStyle	((Integer)propItems.get(attributes.get(5)));
+		gdata.setLineType   ((Integer)propItems.get(attributes.get(6)));
+		gdata.setNotes ((String)propItems.get(attributes.get(7)));
+		gdata.setComment((String)propItems.get(attributes.get(8)));
 				
 		markDirty();
 		setHandleLocation();

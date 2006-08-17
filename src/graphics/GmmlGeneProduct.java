@@ -113,7 +113,7 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	public GmmlGeneProduct(Element e, GmmlDrawing canvas) {
 		this(canvas);
 		
-		this.jdomElement = e;
+		gdata.jdomElement = e;
 		mapAttributes(e);
 		
 		calcStart();
@@ -124,14 +124,14 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	 * Updates the JDom representation of this geneproduct
 	 */
 	public void updateJdomElement() {
-		if(jdomElement != null) {
-			jdomElement.setAttribute("GeneID", geneID);
-			jdomElement.setAttribute("Xref", xref);
-			jdomElement.setAttribute("Type", type);
-			jdomElement.setAttribute("Name", name);
-			jdomElement.setAttribute("BackpageHead", backpageHead);
-			jdomElement.setAttribute("Notes", notes);
-			Element jdomGraphics = jdomElement.getChild("Graphics");
+		if(gdata.jdomElement != null) {
+			gdata.jdomElement.setAttribute("GeneID", geneID);
+			gdata.jdomElement.setAttribute("Xref", xref);
+			gdata.jdomElement.setAttribute("Type", type);
+			gdata.jdomElement.setAttribute("Name", name);
+			gdata.jdomElement.setAttribute("BackpageHead", backpageHead);
+			gdata.jdomElement.setAttribute("Notes", notes);
+			Element jdomGraphics = gdata.jdomElement.getChild("Graphics");
 			if(jdomGraphics !=null) {
 				jdomGraphics.setAttribute("CenterX", Integer.toString(getCenterX() * GmmlData.GMMLZOOM));
 				jdomGraphics.setAttribute("CenterY", Integer.toString(getCenterY() * GmmlData.GMMLZOOM));
@@ -146,8 +146,8 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	 * Fetches the gene identifier from the Jdom representation
 	 */
 	public String getId() {
-		if(jdomElement != null) {
-			return jdomElement.getAttributeValue("Name");
+		if(gdata.jdomElement != null) {
+			return gdata.jdomElement.getAttributeValue("Name");
 			} else {
 			return "";
 		}
@@ -220,11 +220,11 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	}
 	
 	protected void createJdomElement(Document doc) {
-		if(jdomElement == null) {
-			jdomElement = new Element("GeneProduct");
-			jdomElement.addContent(new Element("Graphics"));
+		if(gdata.jdomElement == null) {
+			gdata.jdomElement = new Element("GeneProduct");
+			gdata.jdomElement.addContent(new Element("Graphics"));
 			
-			doc.getRootElement().addContent(jdomElement);
+			doc.getRootElement().addContent(gdata.jdomElement);
 		}
 	}
 		
@@ -340,7 +340,7 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		geneProductDataSource = (String)propItems.get(attributes.get(attributes.indexOf("GeneProduct-Data-Source")));
 		
 		// Update jdom element to store gene id
-		jdomElement.setAttribute("Name", name);
+		gdata.jdomElement.setAttribute("Name", name);
 		
 		calcStart();
 		markDirty();
@@ -361,13 +361,13 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 			String value = at.getValue();
 			switch(index) {
 					case 3:// CenterX
-						this.centerX = Integer.parseInt(value) / GmmlData.GMMLZOOM ; break;
+						this.centerX = Double.parseDouble(value) / GmmlData.GMMLZOOM ; break;
 					case 4:// CenterY
-						this.centerY = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						this.centerY = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
 					case 5:// Width
-						setGmmlWidth(Integer.parseInt(value) / GmmlData.GMMLZOOM); break;
+						setGmmlWidth(Double.parseDouble(value) / GmmlData.GMMLZOOM); break;
 					case 6:// Height
-						setGmmlHeight(Integer.parseInt(value) / GmmlData.GMMLZOOM); break;
+						setGmmlHeight(Double.parseDouble(value) / GmmlData.GMMLZOOM); break;
 					case 2:// GeneLabel
 						this.geneID = value; break;
 					case 8:// Xref
