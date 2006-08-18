@@ -26,7 +26,7 @@ import org.jdom.Element;
 
 import util.ColorConverter;
 import util.SwtUtils;
-import data.GmmlData;
+import data.*;
 
 /**
  * This class implements a geneproduct and 
@@ -40,25 +40,12 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	public static final int INITIAL_HEIGHT = 20;
 	public static final RGB INITIAL_FILL_COLOR = new RGB(255, 255, 255);
 	
-	public static final List attributes = Arrays.asList(new String[] {
-			"Name", "GeneProduct-Data-Source", "GeneID", 
-			"CenterX", "CenterY", "Width", "Height", "Color", 
-			"Xref", "BackpageHead","Type", "Notes" 
-	});
-	
 	double fontSizeDouble;
 	int fontSize;
 
-	RGB color = new RGB (0,0,0);
+	// note: not the same as color!
 	RGB fillColor = INITIAL_FILL_COLOR;
 		
-	String geneID;
-	String xref;
-	String name = "GeneID";
-	String backpageHead = "";
-	String type = "unknown";
-	String notes = "";
-	String geneProductDataSource = "";
 		
 	GmmlGpColor gpColor;
 	
@@ -76,6 +63,7 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		
 		this.fontSizeDouble = INITIAL_FONTSIZE / canvas.getZoomFactor();
 		this.fontSize = (int)this.fontSizeDouble;
+		gdata.setObjectType(ObjectType.GENEPRODUCT);
 	}
 	
 	/**
@@ -92,15 +80,14 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	public GmmlGeneProduct(double x, double y, double width, double height, String geneLabel, String xref, RGB color, GmmlDrawing canvas, Document doc){
 		this(canvas);
 		
-		centerX = x;
-		centerY = y;
-		setGmmlWidth(width);
-		setGmmlHeight(height);
-		this.geneID = geneLabel;
-		this.xref = xref;
-		this.color = color;
+		gdata.setCenterX(x);
+		gdata.setCenterY(y);
+		gdata.setWidth(width);
+		gdata.setHeight(height);
+		gdata.setGeneID(geneLabel);
+		gdata.setXref(xref);
+		gdata.setColor(color);
 
-		calcStart();
 		setHandleLocation();
 		createJdomElement(doc);
 	}
@@ -114,10 +101,17 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		this(canvas);
 		
 		gdata.jdomElement = e;
-		mapAttributes(e);
+		gdata.mapShapeData();
+		gdata.mapColor();
+		gdata.mapNotesAndComment();
+		gdata.mapGeneProductData();
 		
-		calcStart();
 		setHandleLocation();
+	}
+	
+	public String getName()
+	{
+		return gdata.getGeneProductName();
 	}
 	
 	/**
@@ -125,20 +119,10 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	 */
 	public void updateJdomElement() {
 		if(gdata.jdomElement != null) {
-			gdata.jdomElement.setAttribute("GeneID", geneID);
-			gdata.jdomElement.setAttribute("Xref", xref);
-			gdata.jdomElement.setAttribute("Type", type);
-			gdata.jdomElement.setAttribute("Name", name);
-			gdata.jdomElement.setAttribute("BackpageHead", backpageHead);
-			gdata.jdomElement.setAttribute("Notes", notes);
-			Element jdomGraphics = gdata.jdomElement.getChild("Graphics");
-			if(jdomGraphics !=null) {
-				jdomGraphics.setAttribute("CenterX", Integer.toString(getCenterX() * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("CenterY", Integer.toString(getCenterY() * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("Width", Integer.toString((int)width * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("Height", Integer.toString((int)height * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("Color", ColorConverter.color2HexBin(color));
-			}
+			gdata.updateGeneProductData();
+			gdata.updateNotesAndComment();
+			gdata.updateColor();
+			gdata.updateShapeData();
 		}
 	}
 	
@@ -166,8 +150,8 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	public String getSystemCode()
 	{
 		String systemCode = "";
-		if(GmmlData.sysName2Code.containsKey(geneProductDataSource)) 
-			systemCode = GmmlData.sysName2Code.get(geneProductDataSource);
+		if(GmmlData.sysName2Code.containsKey(gdata.getDataSource())) 
+			systemCode = GmmlData.sysName2Code.get(gdata.getDataSource());
 		return systemCode;
 	}
 	
@@ -209,7 +193,7 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	protected void disposeTextControl()
 	{	
 		markDirty();
-		geneID = t.getText();
+		gdata.setGeneID (t.getText());
 		markDirty();
 		canvas.updatePropertyTable(this);
 		Composite c = t.getParent();
@@ -248,7 +232,7 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		}
 		else 
 		{
-			c = SwtUtils.changeColor(c, this.color, e.display);
+			c = SwtUtils.changeColor(c, gdata.getColor(), e.display);
 		}
 		
 		buffer.setForeground(c);
@@ -256,17 +240,17 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		buffer.setLineWidth (1);		
 		
 		buffer.drawRectangle (
-			(int)(startX),
-			(int)(startY),
-			(int)width,
-			(int)height
+			(int)(gdata.getStartX()),
+			(int)(gdata.getStartY()),
+			(int)gdata.getWidth(),
+			(int)gdata.getHeight()
 		);
 		
 		buffer.setClipping (
-				(int)(startX) + 1,
-				(int)(startY) + 1,
-				(int)width - 1,
-				(int)height - 1
+				(int)(gdata.getStartX()) + 1,
+				(int)(gdata.getStartY()) + 1,
+				(int)gdata.getWidth() - 1,
+				(int)gdata.getHeight() - 1
 			);
 		
 		gpColor.draw(e, buffer);
@@ -293,107 +277,13 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 			buffer.setForeground(c);
 			buffer.setLineWidth(2);
 			buffer.drawRectangle (
-					(int)(startX) - 1,
-					(int)(startY) - 1,
-					(int)width + 3,
-					(int)height + 3
+					(int)(gdata.getStartX()) - 1,
+					(int)(gdata.getStartY()) - 1,
+					(int)gdata.getWidth() + 3,
+					(int)gdata.getHeight() + 3
 				);
 			if(c != null) c.dispose();
 		}
 	}
 	
-	public List getAttributes() {
-		return attributes;
-	}
-	
-	public void updateToPropItems()
-	{
-		if (propItems == null)
-		{
-			propItems = new Hashtable();
-		}
-
-		Object[] values = new Object[] {name, geneProductDataSource,
-				geneID, (double)getCenterX(), (double)getCenterY(), width, height, color,
-				xref, backpageHead, type, notes};
-		
-		for (int i = 0; i < attributes.size(); i++)
-		{
-			propItems.put(attributes.get(i), values[i]);
-		}
-	}
-	
-	public void updateFromPropItems()
-	{
-		markDirty();
-		centerX		= (Double)propItems.get(attributes.get(attributes.indexOf("CenterX")));
-		centerY		= (Double)propItems.get(attributes.get(attributes.indexOf("CenterY")));
-		width		= (Double)propItems.get(attributes.get(attributes.indexOf("Width")));
-		height		= (Double)propItems.get(attributes.get(attributes.indexOf("Height")));
-		geneID		= (String)propItems.get(attributes.get(attributes.indexOf("GeneID")));
-		xref		= (String)propItems.get(attributes.get(attributes.indexOf("Xref")));
-		color		= (RGB)propItems.get(attributes.get(attributes.indexOf("Color")));
-		name		= (String)propItems.get(attributes.get(attributes.indexOf("Name")));
-		backpageHead	= (String)propItems.get(attributes.get(attributes.indexOf("BackpageHead")));
-		type		= (String)propItems.get(attributes.get(attributes.indexOf("Type")));
-		notes		= (String)propItems.get(attributes.get(attributes.indexOf("Notes")));
-		geneProductDataSource = (String)propItems.get(attributes.get(attributes.indexOf("GeneProduct-Data-Source")));
-		
-		// Update jdom element to store gene id
-		gdata.jdomElement.setAttribute("Name", name);
-		
-		calcStart();
-		markDirty();
-		setHandleLocation();
-	}
-	
-	/**
-	 * Maps attributes to internal variables.
-	 * @param e - the element to map to a GmmlArc
-	 */
-	private void mapAttributes (Element e) {
-		// Map attributes
-		GmmlVision.log.trace("> Mapping element '" + e.getName()+ "'");
-		Iterator it = e.getAttributes().iterator();
-		while(it.hasNext()) {
-			Attribute at = (Attribute)it.next();
-			int index = attributes.indexOf(at.getName());
-			String value = at.getValue();
-			switch(index) {
-					case 3:// CenterX
-						this.centerX = Double.parseDouble(value) / GmmlData.GMMLZOOM ; break;
-					case 4:// CenterY
-						this.centerY = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
-					case 5:// Width
-						setGmmlWidth(Double.parseDouble(value) / GmmlData.GMMLZOOM); break;
-					case 6:// Height
-						setGmmlHeight(Double.parseDouble(value) / GmmlData.GMMLZOOM); break;
-					case 2:// GeneLabel
-						this.geneID = value; break;
-					case 8:// Xref
-						this.xref = value; break;
-					case 7:// Color
-						this.color = ColorConverter.gmmlString2Color(value); break;
-					case 0:// Name
-						this.name = value; break;
-					case 9:// BackpageHead
-						this.backpageHead = value; break;
-					case 10: // Type
-						this.type = value; break;
-					case 11:// Notes
-						this.notes = value; break;
-					case 1:// GeneProduct-Data-Source
-						this.geneProductDataSource = value; 
-						break;
-					case -1:
-						GmmlVision.log.trace("\t> Attribute '" + at.getName() + "' is not recognized");
-			}
-		}
-		
-		// Map child's attributes
-		it = e.getChildren().iterator();
-		while(it.hasNext()) {
-			mapAttributes((Element)it.next());
-		}
-	}
 }

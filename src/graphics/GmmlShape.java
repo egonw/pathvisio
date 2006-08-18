@@ -20,6 +20,7 @@ import org.jdom.Element;
 import util.ColorConverter;
 import util.SwtUtils;
 import data.GmmlData;
+import data.*;
 
 /**
  * This class represents a GMMLShape, which can be a 
@@ -29,21 +30,11 @@ public class GmmlShape extends GmmlGraphicsShape
 {
 	private static final long serialVersionUID = 1L;
 
-	public static final int TYPE_RECTANGLE	= 0;
-	public static final int TYPE_OVAL 		= 1;
-	public static final int TYPE_ARC	 	= 2;
-	
 	public final List attributes = Arrays.asList(new String[] {
 			"CenterX", "CenterY", "Width", "Height", 
 			"Type","Color","Rotation", "Notes"
 	});
-	
-	public static final List typeMappings = Arrays.asList(new String[] {
-			"Rectangle","Oval"
-	});
-		
-	int type;
-		
+			
 	/**
 	 * Constructor for this class
 	 * @param canvas - the GmmlDrawing this GmmlShape will be part of
@@ -52,6 +43,7 @@ public class GmmlShape extends GmmlGraphicsShape
 	{
 		super(canvas);
 		drawingOrder = GmmlDrawing.DRAW_ORDER_SHAPE;
+		gdata.setObjectType(ObjectType.SHAPE);
 	}
 		
 	/**
@@ -68,12 +60,12 @@ public class GmmlShape extends GmmlGraphicsShape
 	{
 		this(canvas);
 		
-		centerX = x;
-		centerY = y;
-		setGmmlWidth(width);
-		setGmmlHeight(height);
+		gdata.setCenterX (x);
+		gdata.setCenterY (y);
+		gdata.setWidth(width);
+		gdata.setHeight(height);
 		gdata.setColor(color);
-		this.type 		= type;
+		gdata.setShapeType(type);
 		gdata.setRotation (rotation);
 
 		setHandleLocation();
@@ -89,7 +81,9 @@ public class GmmlShape extends GmmlGraphicsShape
 		this(canvas);
 		
 		gdata.jdomElement = e;
-		mapAttributes(e);
+		gdata.mapShapeData();
+		gdata.mapColor();
+		gdata.mapNotesAndComment();
 		
 		setHandleLocation();
 	}
@@ -109,7 +103,7 @@ public class GmmlShape extends GmmlGraphicsShape
 	protected void createJdomElement(Document doc) {
 		if(gdata.jdomElement == null) {
 			gdata.jdomElement = new Element("Shape");
-			gdata.jdomElement.setAttribute("Type", (String)typeMappings.get(type));
+			gdata.jdomElement.setAttribute("Type", ShapeType.getMapping(gdata.getShapeType()));
 			gdata.jdomElement.addContent(new Element("Graphics"));
 			
 			doc.getRootElement().addContent(gdata.jdomElement);
@@ -134,7 +128,7 @@ public class GmmlShape extends GmmlGraphicsShape
 		}
 		else 
 		{
-			c = SwtUtils.changeColor(c, this.color, e.display);
+			c = SwtUtils.changeColor(c, gdata.getColor(), e.display);
 		}
 		buffer.setForeground (c);
 		buffer.setLineStyle (SWT.LINE_SOLID);
@@ -147,43 +141,39 @@ public class GmmlShape extends GmmlGraphicsShape
 		int width = (int)gdata.getWidth();
 		int height = (int)gdata.getHeight();
 		
-		if (type == TYPE_RECTANGLE)
+		switch (gdata.getShapeType())
 		{
-			buffer.setLineWidth (1);
-			buffer.drawRectangle (
-				startX,
-				startY,
-				width,
-				height
-			);
-		}
-		else if (type == TYPE_OVAL)
-		{
-			buffer.setLineWidth (1);
-			buffer.drawOval (
-				startX, 
-				startY,
-				width, 
-				height
-			);
-		}
-		else if (type == TYPE_ARC)
-		{
-			buffer.setLineWidth (2);
-			buffer.drawArc(
+			case ShapeType.RECTANGLE: 
+				buffer.setLineWidth (1);
+				buffer.drawRectangle (
+					startX,
+					startY,
+					width,
+					height
+				);
+				break;
+			case ShapeType.OVAL:
+				
+				buffer.setLineWidth (1);
+				buffer.drawOval (
 					startX, 
 					startY,
 					width, 
-					height,
-				 0, -180
-			);			
-			buffer.setTransform(null);
-			
-			tr.dispose();
-			c.dispose();
-
+					height
+				);
+				break;
+			case ShapeType.ARC:
+				buffer.setLineWidth (2);
+				buffer.drawArc(
+						startX, 
+						startY,
+						width, 
+						height,
+					 0, -180
+				);
+				break;
 		}
-		
+
 		buffer.setTransform(null);
 		
 		c.dispose();
@@ -194,84 +184,5 @@ public class GmmlShape extends GmmlGraphicsShape
 	{
 		draw(e, e.gc);
 	}
-						
-	public List getAttributes() {
-		return attributes;
-	}
 	
-	public void updateToPropItems()
-	{
-		if (propItems == null)
-		{
-			propItems = new Hashtable();
-		}
-		
-		Object[] values = new Object[] {getCenterX(), getCenterY(),
-				gdata.getWidth(), gdata.getHeight(), type, gdata.getColor(), 
-				gdata.getRotation(), gdata.getNotes()};
-		
-		for (int i = 0; i < attributes.size(); i++)
-		{
-			propItems.put(attributes.get(i), values[i]);
-		}
-	}
-	
-	public void updateFromPropItems()
-	{
-		markDirty();
-		centerX = ((Double)propItems.get(attributes.get(0)));
-		centerY = ((Double)propItems.get(attributes.get(1)));
-		width		= (Double)propItems.get(attributes.get(2));
-		height		= (Double)propItems.get(attributes.get(3));
-		type		= (Integer)propItems.get(attributes.get(4));
-		color 		= (RGB)propItems.get(attributes.get(5));
-		rotation	= (Double)propItems.get(attributes.get(6));
-		notes		= (String)propItems.get(attributes.get(7));	
-		calcStart();
-		markDirty();
-		setHandleLocation();
-	}
-	
-	/**
-	 * Maps attributes to internal variables.
-	 * @param e - the element to map to a GmmlArc
-	 */
-	private void mapAttributes (Element e) {
-		// Map attributes
-		GmmlVision.log.trace("> Mapping element '" + e.getName()+ "'");
-		Iterator it = e.getAttributes().iterator();
-		while(it.hasNext()) {
-			Attribute at = (Attribute)it.next();
-			int index = attributes.indexOf(at.getName());
-			String value = at.getValue();
-			switch(index) {
-					case 0: // CenterX
-						centerX = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 1: // CenterY
-						centerY = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 2: // Width
-						setGmmlWidth(Double.parseDouble(value) / GmmlData.GMMLZOOM); break;
-					case 3: // Height
-						setGmmlHeight(Double.parseDouble(value) / GmmlData.GMMLZOOM); break;
-					case 4: // Type
-						if(typeMappings.indexOf(value) > -1)
-							this.type = typeMappings.indexOf(value);
-						break;
-					case 5: // Color
-						this.color = ColorConverter.gmmlString2Color(value); break;
-					case 6: // Rotation
-						this.rotation = Double.parseDouble(value); break;
-					case 7: // Notes
-						this.notes = value; break;
-					case -1:
-						GmmlVision.log.trace("\t> Attribute '" + at.getName() + "' is not recognized");
-			}
-		}
-		
-		// Map child's attributes
-		it = e.getChildren().iterator();
-		while(it.hasNext()) {
-			mapAttributes((Element)it.next());
-		}
-	}	
 }

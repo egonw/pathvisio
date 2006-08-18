@@ -3,7 +3,6 @@ package gmmlVision;
 import graphics.GmmlGeneProduct;
 import graphics.GmmlGraphics;
 import graphics.GmmlLine;
-import graphics.GmmlLineShape;
 import graphics.GmmlMappInfo;
 import graphics.GmmlShape;
 
@@ -76,7 +75,7 @@ public class GmmlPropertyTable extends Composite {
 	final static int[] attributeTypes = new int[] {
 		DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, 
 		COLOR, LINESTYLE, TYPE, DOUBLE, ORIENTATION, DOUBLE,
-		STRING, STRING, STRING, STRING, STRING, STRING, INTEGER,STRING, 
+		STRING, STRING, STRING, STRING, STRING, STRING, INTEGER, STRING, 
 		STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING,
 		STRING, STRING, TYPE, INTEGER, INTEGER, INTEGER, INTEGER, INTEGER, INTEGER
 	};
@@ -140,16 +139,12 @@ public class GmmlPropertyTable extends Composite {
 			String[] types = new String[] {""};
 			if (g instanceof GmmlLine)
 			{
-				types = new String[] {"Line", "Arrow"};
-			}
-			else if (g instanceof GmmlLineShape)
-			{
-				types = new String[] {"TBar", "Receptor round",
+				types = new String[] {"Line", "Arrow", "TBar", "Receptor round",
 						"Ligand round", "Receptor square", "Ligand square"};
 			}
 			else if (g instanceof GmmlShape)
 			{
-				types = new String[] {"Rectangle", "Oval"};
+				types = new String[] {"Rectangle", "Oval", "Arc"};
 			}
 			else if (key.equals("GeneProduct-Data-Source"))
 			{
@@ -184,9 +179,9 @@ public class GmmlPropertyTable extends Composite {
 		
 		public Object getValue(Object element, String property) {
 			String key = (String)element;
-			if(g.propItems.containsKey(key))
+			if(g.gdata.propItems.containsKey(key))
 			{
-				Object value = g.propItems.get(key);
+				Object value = g.gdata.propItems.get(key);
 				switch((Integer)typeMappings.get(key))
 				{
 				case DOUBLE:
@@ -225,7 +220,7 @@ public class GmmlPropertyTable extends Composite {
 				}
 			}
 			
-			g.propItems.put(key, value);
+			g.gdata.propItems.put(key, value);
 			g.updateFromPropItems();
 			tableViewer.refresh();
 		}
@@ -271,9 +266,9 @@ public class GmmlPropertyTable extends Composite {
 					}
 				case 1:
 					//TODO: prettier labels for different value types
-					if(g.propItems.containsKey(key))
+					if(g.gdata.propItems.containsKey(key))
 					{
-						return g.propItems.get(key).toString();
+						return g.gdata.propItems.get(key).toString();
 					}
 			}
 			return null;

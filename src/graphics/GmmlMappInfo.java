@@ -17,6 +17,7 @@ import org.jdom.Attribute;
 import org.jdom.Element;
 
 import data.GmmlData;
+import data.*;
 
 public class GmmlMappInfo extends GmmlGraphics {
 	
@@ -61,6 +62,7 @@ public class GmmlMappInfo extends GmmlGraphics {
 		drawingOrder = GmmlDrawing.DRAW_ORDER_MAPPINFO;
 		
 		gdata.jdomElement = e;
+		gdata.setObjectType(ObjectType.INFOBOX);
 		mapAttributes(e);
 	}
 	
@@ -140,7 +142,8 @@ public class GmmlMappInfo extends GmmlGraphics {
 	public List getAttributes() {
 		return attributes;
 	}
-	
+
+	/*
 	public void updateToPropItems()
 	{
 		if (propItems == null)
@@ -183,7 +186,7 @@ public class GmmlMappInfo extends GmmlGraphics {
 		canvas.setSize((int)boardWidth, (int)boardHeight);
 //		canvas.gmmlVision.getShell().setSize(windowWidth, windowHeight);
 	}
-	
+	*/
 	public void updateJdomElement() {
 		if(gdata.jdomElement != null) {
 			gdata.jdomElement.setAttribute("Name", name);

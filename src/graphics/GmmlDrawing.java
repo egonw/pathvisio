@@ -166,7 +166,7 @@ PaintListener, MouseTrackListener, KeyListener
 		{
 			if(o instanceof GmmlGeneProduct)
 			{
-				mappIds.add(((GmmlGeneProduct)o).name);
+				mappIds.add(((GmmlGeneProduct)o).getName());
 			}
 		}
 		return mappIds;
@@ -561,38 +561,35 @@ PaintListener, MouseTrackListener, KeyListener
 	{
 		GmmlGraphics g = null;
 		GmmlHandle h = null;
+		GmmlLine l = null;
 		Document d = GmmlVision.getGmmlData().getDocument();
 		
 		switch(newGraphics) {
 		case NEWNONE:
 			return;
 		case NEWLINE:
-			g = new GmmlLine(e.x, e.y, e.x, e.y,stdRGB, this, d);
-			GmmlLine l = (GmmlLine)g;
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y,stdRGB, this, d);
 			l.gdata.setLineStyle (LineStyle.SOLID);
 			l.gdata.setLineType (LineType.LINE);
 			h = l.handleEnd;
 			isDragging = true;
 			break;
 		case NEWLINEARROW:
-			g = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
-			l = (GmmlLine)g;
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
 			l.gdata.setLineStyle (LineStyle.SOLID);
 			l.gdata.setLineType (LineType.ARROW);
 			h = l.handleEnd;
 			isDragging = true;
 			break;
 		case NEWLINEDASHED:
-			g = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
-			l = (GmmlLine)g;
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
 			l.gdata.setLineStyle (LineStyle.DASHED);
 			l.gdata.setLineType (LineType.LINE);
 			h = l.handleEnd;
 			isDragging = true;
 			break;
 		case NEWLINEDASHEDARROW:
-			g = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
-			l = (GmmlLine)g;
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
 			l.gdata.setLineStyle (LineStyle.DASHED);
 			l.gdata.setLineType (LineType.ARROW);
 			h = l.handleEnd;
@@ -605,12 +602,12 @@ PaintListener, MouseTrackListener, KeyListener
 			h = null;
 			break;
 		case NEWARC:
-			g = new GmmlArc(e.x, e.y, 1, 1, stdRGB, 0, this, d);
-			h = ((GmmlArc)g).handleSE;
+			g = new GmmlShape(e.x, e.y, 1, 1, ShapeType.ARC, stdRGB, 0, this, d);
+			h = ((GmmlShape)g).handleSE;
 			isDragging = true;
 			break;
 		case NEWBRACE:
-			g = new GmmlBrace(e.x, e.y, 1, 1, GmmlBrace.ORIENTATION_RIGHT, stdRGB, this, d);
+			g = new GmmlBrace(e.x, e.y, 1, 1, OrientationType.RIGHT, stdRGB, this, d);
 			h = ((GmmlBrace)g).handleSE;
 			isDragging = true;
 			break;
@@ -621,38 +618,48 @@ PaintListener, MouseTrackListener, KeyListener
 			h = null;
 			break;
 		case NEWRECTANGLE:
-			g = new GmmlShape(e.x, e.y, 1, 1, GmmlShape.TYPE_RECTANGLE, stdRGB, 0, this, d);
+			g = new GmmlShape(e.x, e.y, 1, 1, ShapeType.RECTANGLE, stdRGB, 0, this, d);
 			h = ((GmmlShape)g).handleSE;
 			isDragging = true;
 			break;
 		case NEWOVAL:
-			g = new GmmlShape(e.x, e.y, 50 * zoomFactor, 50 * zoomFactor, GmmlShape.TYPE_OVAL, stdRGB, 0, this, d);
+			g = new GmmlShape(e.x, e.y, 50 * zoomFactor, 50 * zoomFactor, ShapeType.OVAL, stdRGB, 0, this, d);
 			h = ((GmmlShape)g).handleSE;
 			isDragging = true;
 			break;
 		case NEWTBAR:
-			g = new GmmlLineShape(e.x, e.y, e.x, e.y, GmmlLineShape.TYPE_TBAR, stdRGB, this, d);
-			h = ((GmmlLineShape)g).handleEnd;
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
+			h = ((GmmlLine)g).handleEnd;
+			l.gdata.setLineStyle (LineStyle.SOLID);
+			l.gdata.setLineType (LineType.TBAR);			
 			isDragging = true;
 			break;
 		case NEWRECEPTORROUND:
-			g = new GmmlLineShape(e.x, e.y, e.x, e.y, GmmlLineShape.TYPE_RECEPTOR_ROUND, stdRGB, this, d);
-			h = ((GmmlLineShape)g).handleEnd;
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
+			h = ((GmmlLine)g).handleEnd;
+			l.gdata.setLineStyle (LineStyle.SOLID);
+			l.gdata.setLineType (LineType.RECEPTOR_ROUND);			
 			isDragging = true;
 			break;
 		case NEWRECEPTORSQUARE:
-			g = new GmmlLineShape(e.x, e.y, e.x, e.y, GmmlLineShape.TYPE_RECEPTOR_SQUARE, stdRGB, this, d);
-			h = ((GmmlLineShape)g).handleEnd;
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
+			h = ((GmmlLine)g).handleEnd;
+			l.gdata.setLineStyle (LineStyle.SOLID);
+			l.gdata.setLineType (LineType.RECEPTOR_SQUARE);			
 			isDragging = true;
 			break;
 		case NEWLIGANDROUND:
-			g = new GmmlLineShape(e.x, e.y, e.x, e.y, GmmlLineShape.TYPE_LIGAND_ROUND, stdRGB, this, d);
-			h = ((GmmlLineShape)g).handleEnd;
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
+			h = ((GmmlLine)g).handleEnd;
+			l.gdata.setLineStyle (LineStyle.SOLID);
+			l.gdata.setLineType (LineType.LIGAND_ROUND);			
 			isDragging = true;
 			break;
 		case NEWLIGANDSQUARE:
-			g = new GmmlLineShape(e.x, e.y, e.x, e.y, GmmlLineShape.TYPE_LIGAND_SQUARE, stdRGB, this, d);
-			h = ((GmmlLineShape)g).handleEnd;
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
+			h = ((GmmlLine)g).handleEnd;
+			l.gdata.setLineStyle (LineStyle.SOLID);
+			l.gdata.setLineType (LineType.LIGAND_SQUARE);			
 			isDragging = true;
 			break;
 		}
@@ -724,7 +731,7 @@ PaintListener, MouseTrackListener, KeyListener
 			            labelR.setBackground(getShell().getDisplay()
 			                    .getSystemColor(SWT.COLOR_INFO_BACKGROUND));
 			            
-			            Data mappIdData = GmmlGex.getCachedData(gp.name, gp.getSystemCode());
+			            Data mappIdData = GmmlGex.getCachedData(gp.getName(), gp.getSystemCode());
 			            if(mappIdData == null) return; //No data in cache for this geneproduct
 			            HashMap<Integer, Object> data = mappIdData.getAverageSampleData();
 			            String textL = "";

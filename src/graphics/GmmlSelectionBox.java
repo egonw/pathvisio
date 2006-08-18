@@ -22,6 +22,11 @@ class GmmlSelectionBox extends GmmlGraphicsShape
 	boolean isSelecting;
 	boolean isVisible;
 	
+	double startX;
+	double startY;
+	double width;
+	double height;
+	
 	/**
 	 * Constructor for this class
 	 * @param canvas - the GmmlDrawing this selectionbox will be part of

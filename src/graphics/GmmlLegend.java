@@ -44,7 +44,7 @@ public class GmmlLegend extends ScrolledComposite {
 	public GmmlLegend(Composite parent, int style)
 	{
 		super(parent, style);
-			
+		
 		createContents();
 	}
 	

@@ -450,70 +450,14 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 			bounds.add(new Rectangle2D.Double(c.x - p.x/2, c.y - p.y/2, c.x + p.x/2, c.y + p.y/2)); 
 		}
 		return getOutline().getBounds();
-	}
-		
-	
-	/**
-	 * Sets the width of the graphical representation.
-	 * This differs from the GMML representation:
-	 * in GMML height and width are radius, here for all shapes the width is diameter
-	 * TODO: change to diameter in gmml
-	 * @param gmmlWidth the width as specified in the GMML representation
-	 */
-	public void setGmmlWidth(double gmmlWidth) {
-		gdata.setWidth(gmmlWidth * 2);
-		
-		if(this instanceof GmmlShape) {			
-			if(((GmmlShape)this).type == GmmlShape.TYPE_RECTANGLE) gdata.setWidth(gmmlWidth);
-		}
-		else if(this instanceof GmmlLabel ||
-				this instanceof GmmlGeneProduct ) { gdata.setWidth(gmmlWidth); }
-	}
-	
-	/**
-	 * Get the width as stored in GMML
-	 * @return
-	 */
-	public int getGmmlWidth() {
-		double width = gdata.getWidth() * GmmlData.GMMLZOOM;
-		if(this instanceof GmmlShape) {
-			return (int)(((GmmlShape)this).type == GmmlShape.TYPE_OVAL ? width / 2 : width);
-		}
-		else if(this instanceof GmmlLabel ||
-				this instanceof GmmlGeneProduct) return (int)width;
-		
-		return (int)((gdata.getWidth() * GmmlData.GMMLZOOM)/2);
-	}
-	
-	/**
-	 * Sets the height of the graphical representation.
-	 * This differs from the GMML representation:
-	 * in some GMML objects height and width are radius, here for all shapes the width is diameter
-	 * TODO: change to diameter in gmml
-	 *  @param gmmlHeight the height as specified in the GMML representation
-	 */
-	public void setGmmlHeight(double gmmlHeight) {
-		gdata.setHeight(gmmlHeight * 2);
-		
-		if(this instanceof GmmlShape) {
-			if(((GmmlShape)this).type == GmmlShape.TYPE_RECTANGLE) gdata.setHeight(gmmlHeight);
-		}
-		else if(this instanceof GmmlLabel ||
-				this instanceof GmmlGeneProduct) { gdata.setHeight(gmmlHeight); }
-	}
-	
-	/**
-	 * Get the height as stored in GMML
-	 * @return
-	 */
-	public int getGmmlHeight() {
-		double height = gdata.getHeight() * GmmlData.GMMLZOOM;
-		if(this instanceof GmmlShape) {
-			return (int)(((GmmlShape)this).type == GmmlShape.TYPE_OVAL ? height / 2 : height);
-		}
-		else if(this instanceof GmmlLabel ||
-				this instanceof GmmlGeneProduct) return (int)height;
-		
-		return (int)((gdata.getHeight() * GmmlData.GMMLZOOM)/2);
+	}	
+
+	public void updateFromPropItems()
+	{
+		markDirty();	
+		gdata.updateFromPropItems();
+		markDirty();
+		setHandleLocation();
+		canvas.redrawDirtyRect();
 	}
 }

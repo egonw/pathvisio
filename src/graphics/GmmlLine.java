@@ -32,10 +32,6 @@ import data.*;
 public class GmmlLine extends GmmlGraphicsLine
 {
 	private static final long serialVersionUID = 1L;
-			
-	public final List attributes = Arrays.asList(new String[] {
-			"StartX", "StartY", "EndX", "EndY", "Color", "Style", "Type", "Notes", "Comment"
-	});
 	
 	/**
 	 * Constructor for this class
@@ -44,6 +40,7 @@ public class GmmlLine extends GmmlGraphicsLine
 	public GmmlLine(GmmlDrawing canvas, double startx, double starty, double endx, double endy)
 	{
 		super(canvas, startx, starty, endx, endy);
+		gdata.setObjectType(ObjectType.LINE);
 		drawingOrder = GmmlDrawing.DRAW_ORDER_LINE;
 	}
 	
@@ -77,7 +74,6 @@ public class GmmlLine extends GmmlGraphicsLine
 		
 		this.gdata.jdomElement = e;
 
-//		mapAttributes(e);
 		gdata.mapLineData();
 		gdata.mapColor();
 		gdata.mapNotesAndComment();
@@ -102,7 +98,11 @@ public class GmmlLine extends GmmlGraphicsLine
 	
 	protected void draw(PaintEvent e, GC buffer)
 	{
-		Line2D line = getLine();
+		double endx = gdata.getEndX();
+		double endy = gdata.getEndY();
+		double startx = gdata.getStartX();
+		double starty = gdata.getStartY();
+
 		Color c = null;
 		if (isSelected())
 		{
@@ -124,15 +124,102 @@ public class GmmlLine extends GmmlGraphicsLine
 		else if (ls == LineStyle.DASHED)
 		{ 
 			buffer.setLineStyle (SWT.LINE_DASH);
-		}
+		}			
+
+		double s = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy - starty)*(endy - starty)));
 		
-		buffer.drawLine ((int)line.getX1(), (int)line.getY1(), (int)line.getX2(), (int)line.getY2());
-		
-		if (gdata.getLineType() == LineType.ARROW)
+		switch (gdata.getLineType())
 		{
-			drawArrowhead(buffer);
+		
+			case LineType.LINE:
+				buffer.drawLine ((int)startx, (int)starty, (int)endx, (int)endy);
+				break;
+			case LineType.ARROW:				
+				buffer.drawLine ((int)startx, (int)starty, (int)endx, (int)endy);
+				drawArrowhead(buffer);
+				break;
+			case LineType.TBAR:
+			{
+				s /= 8;
+	
+				double capx1 = ((-endy + starty)/s) + endx;
+				double capy1 = (( endx - startx)/s) + endy;
+				double capx2 = (( endy - starty)/s) + endx;
+				double capy2 = ((-endx + startx)/s) + endy;
+	
+				buffer.drawLine ((int)startx, (int)starty, (int)endx, (int)endy);
+				buffer.drawLine ((int)capx1, (int)capy1, (int)capx2, (int)capy2);
+			}
+				break;
+			case LineType.LIGAND_ROUND:
+			{
+				double dx = (endx - startx)/s;
+				double dy = (endy - starty)/s;
+							
+				buffer.drawLine ((int)startx, (int)starty, (int)(endx - 6 * dx), (int)(endy - 6 * dy));
+				buffer.drawOval ((int)endx - 5, (int)endy - 5, 10, 10);
+				buffer.fillOval ((int)endx - 5, (int)endy - 5, 10, 10);
+			}
+				break;
+			case LineType.RECEPTOR_ROUND:
+			{
+				// TODO: this code is not safe for division by zero!
+				double theta 	= Math.toDegrees(Math.atan((endx - startx)/(endy - starty)));
+				double dx 		= (endx - startx)/s;
+				double dy 		= (endy - starty)/s;	
+				
+				buffer.drawLine ((int)startx, (int)starty, (int)(endx - (8*dx)), (int)(endy - (8*dy)));
+				buffer.drawArc ((int)endx - 8, (int)endy - 8, 16, 16, (int)theta + 180, -180);			
+			}
+				break;
+			case LineType.RECEPTOR_SQUARE:
+			{
+				s /= 8;
+				
+				double x3 		= endx - ((endx - startx)/s);
+				double y3 		= endy - ((endy - starty)/s);
+				double capx1 	= ((-endy + starty)/s) + x3;
+				double capy1 	= (( endx - startx)/s) + y3;
+				double capx2 	= (( endy - starty)/s) + x3;
+				double capy2 	= ((-endx + startx)/s) + y3;			
+				double rx1		= capx1 + 1.5*(endx - startx)/s;
+				double ry1 		= capy1 + 1.5*(endy - starty)/s;
+				double rx2 		= capx2 + 1.5*(endx - startx)/s;
+				double ry2 		= capy2 + 1.5*(endy - starty)/s;
+			
+				buffer.drawLine ((int)startx, (int)starty, (int)x3, (int)y3);
+				buffer.drawLine ((int)capx1, (int)capy1, (int)capx2, (int)capy2);
+				buffer.drawLine ((int)capx1, (int)capy1, (int)rx1, (int)ry1);
+				buffer.drawLine ((int)capx2, (int)capy2, (int)rx2, (int)ry2);
+			}
+				break;
+			case LineType.LIGAND_SQUARE:
+			{
+				s /= 6;
+				double x3 		= endx - ((endx - startx)/s);
+				double y3 		= endy - ((endy - starty)/s);
+	
+				int[] points = new int[4 * 2];
+				
+				points[0] = (int) (((-endy + starty)/s) + x3);
+				points[1] = (int) ((( endx - startx)/s) + y3);
+				points[2] = (int) ((( endy - starty)/s) + x3);
+				points[3] = (int) (((-endx + startx)/s) + y3);
+	
+				points[4] = (int) (points[2] + 1.5*(endx - startx)/s);
+				points[5] = (int) (points[3] + 1.5*(endy - starty)/s);
+				points[6] = (int) (points[0] + 1.5*(endx - startx)/s);
+				points[7] = (int) (points[1] + 1.5*(endy - starty)/s);
+				
+				buffer.drawLine ((int)startx, (int)starty, (int)x3, (int)y3);
+				buffer.drawPolygon(points);
+				buffer.fillPolygon(points);
+			}
+				break;
 		}
+		
 		c.dispose();
+
 		
 	}
 	
@@ -202,86 +289,4 @@ public class GmmlLine extends GmmlGraphicsLine
 		buffer.fillPolygon (points);
 	}
 
-	/**
-	 * Maps attributes to internal variables.
-	 * @param e - the element to map to a GmmlArc
-	 */
-	private void mapAttributes (Element e) {
-		// Map attributes
-		GmmlVision.log.trace("> Mapping element '" + e.getName()+ "'");
-		Iterator it = e.getAttributes().iterator();
-		while(it.hasNext()) {
-			Attribute at = (Attribute)it.next();
-			int index = attributes.indexOf(at.getName());
-			String value = at.getValue();
-			switch(index) {
-					case 0: // StartX
-						break;
-					case 1: // StartY
-						break;
-					case 2: // EndX
-						break;
-					case 3: // EndY
-						break;
-					case 4: // Color
-						break;
-					case 5: // Style
-						break;
-					case 6: // Type
-						break;
-					case 7: //Notes
-						break;
-					case -1:
-						GmmlVision.log.trace("\t> Attribute '" + at.getName() + "' is not recognized");
-			}
-		}
-		// Map child's attributes
-		it = e.getChildren().iterator();
-		while(it.hasNext()) {
-			mapAttributes((Element)it.next());
-		}
-	}
-	
-	public List getAttributes() {
-		return attributes;
-	}
-	
-	public void updateToPropItems()
-	{
-		if (propItems == null)
-		{
-			propItems = new Hashtable();
-		}
-		
-		Object[] values = new Object[] {
-				gdata.getStartX(), gdata.getStartY(), 
-				 gdata.getEndX(), gdata.getEndY(), 
-				 gdata.getColor(), 
-				 gdata.getLineStyle(), gdata.getLineType(), 
-				 gdata.getNotes(), gdata.getComment()};
-		
-		for (int i = 0; i < attributes.size(); i++)
-		{
-			propItems.put(attributes.get(i), values[i]);
-		}
-	}
-	
-	public void updateFromPropItems()
-	{
-		markDirty();
-		
-		gdata.setStartX ((Double)propItems.get(attributes.get(0)));
-		gdata.setStartY ((Double)propItems.get(attributes.get(1)));
-		gdata.setEndX ((Double)propItems.get(attributes.get(2)));
-		gdata.setEndY ((Double)propItems.get(attributes.get(3)));
-		gdata.setColor ((RGB)propItems.get(attributes.get(4)));
-		gdata.setLineStyle	((Integer)propItems.get(attributes.get(5)));
-		gdata.setLineType   ((Integer)propItems.get(attributes.get(6)));
-		gdata.setNotes ((String)propItems.get(attributes.get(7)));
-		gdata.setComment((String)propItems.get(attributes.get(8)));
-				
-		markDirty();
-		setHandleLocation();
-		
-	}
 }

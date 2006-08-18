@@ -19,7 +19,7 @@ public abstract class GmmlGraphics extends GmmlDrawingObject
 	public static RGB selectColor = GmmlPreferences.getColorProperty("colors.selectColor");
 	public static RGB highlightColor = GmmlPreferences.getColorProperty("colors.highlightColor");
 	
-	GmmlGraphicsData gdata = new GmmlGraphicsData();
+	public GmmlGraphicsData gdata = new GmmlGraphicsData();
 	
 	public GmmlGraphics(GmmlDrawing canvas) {
 		super(canvas);
@@ -43,12 +43,19 @@ public abstract class GmmlGraphics extends GmmlDrawingObject
 		}
 	}
 	
-	//Methods dealing with property table
-	public Hashtable propItems;
+	public void updateToPropItems()
+	{
+		gdata.updateToPropItems();
+	}
 	
-	public void updateToPropItems() {}
-	
-	public void updateFromPropItems() {}
+	public void updateFromPropItems()
+	{
+		markDirty();	
+		gdata.updateFromPropItems();
+		markDirty();
+		//setHandleLocation();
+		canvas.redrawDirtyRect();
+	}
 	
 	//Methods dealing with the GMML representation
 	public Element getJdomElement() { 
@@ -57,5 +64,5 @@ public abstract class GmmlGraphics extends GmmlDrawingObject
 	
 	public void updateJdomElement() {}
 	
-	public List getAttributes() { return null ;}
+	public List getAttributes() { return gdata.getAttributes() ;}
 }

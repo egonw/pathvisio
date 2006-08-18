@@ -1,25 +1,16 @@
 package graphics;
 
-import gmmlVision.GmmlVision;
-
-import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Transform;
-import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
 
-import util.ColorConverter;
 import util.SwtUtils;
-import data.GmmlData;
+import data.*;
 
 /**
  * This class implements a brace and provides 
@@ -30,25 +21,7 @@ public class GmmlBrace extends GmmlGraphicsShape
 	private static final long serialVersionUID = 1L;
 	
 	public static final int INITIAL_PPO = 10;
-	public static final int ORIENTATION_TOP		= 0;
-	public static final int ORIENTATION_RIGHT	= 1;
-	public static final int ORIENTATION_BOTTOM	= 2;
-	public static final int ORIENTATION_LEFT	= 3;
-	
-	public final List attributes = Arrays.asList(new String[] {
-			"CenterX", "CenterY", "Width", "PicPointOffset", "Orientation", "Color",
-			"Notes"
-	});
-	
-	RGB color;
-	
-	String notes = "";
-	
-	// Some mappings to Gmml
-	private final List orientationMappings = Arrays.asList(new String[] {
-			"top", "right", "bottom", "left"
-	});
-		
+				
 	/**
 	 * Constructor for this class
 	 * @param canvas - the GmmlDrawing this brace will be part of
@@ -57,6 +30,7 @@ public class GmmlBrace extends GmmlGraphicsShape
 	{
 		super(canvas);
 		drawingOrder = GmmlDrawing.DRAW_ORDER_BRACE;
+		gdata.setObjectType(ObjectType.BRACE);
 	}
 	
 	/**
@@ -73,14 +47,13 @@ public class GmmlBrace extends GmmlGraphicsShape
 	{
 		this(canvas);
 		
-		this.centerX = centerX;
-		this.centerY = centerY;
-		setGmmlWidth(width);
-		setGmmlHeight(ppo);
-		setOrientation(orientation);
-		this.color = color;
+		gdata.setCenterX(centerX);
+		gdata.setCenterY(centerY);
+		gdata.setWidth(width);
+		gdata.setHeight(ppo);
+		gdata.setOrientation(orientation);
+		gdata.setColor(color);
 
-		calcStart();
 		setHandleLocation();
 		createJdomElement(doc);
 	}
@@ -95,31 +68,10 @@ public class GmmlBrace extends GmmlGraphicsShape
 		
 		gdata.jdomElement = e;
 		
-		mapAttributes(e);
-		
-		calcStart();
+		gdata.mapNotesAndComment();
+		gdata.mapBraceData();
+		gdata.mapColor();		
 		setHandleLocation();
-	}
-
-	public void setOrientation(int orientation) {
-		if(orientation == ORIENTATION_TOP) rotation = 0;
-		if(orientation == ORIENTATION_LEFT) rotation = Math.PI/2;
-		if(orientation == ORIENTATION_BOTTOM) rotation = Math.PI;
-		if(orientation == ORIENTATION_RIGHT) rotation = Math.PI*(3.0/2);
-	}
-		
-	public int getOrientation() {
-		double r = rotation / Math.PI;
-		if(r < 1.0/4 || r >= 7.0/4) return ORIENTATION_TOP;
-		if(r > 1.0/4 && r <= 3.0/4) return ORIENTATION_LEFT;
-		if(r > 3.0/4 && r <= 5.0/4) return ORIENTATION_BOTTOM;
-		if(r > 5.0/4 && r <= 7.0/4) return ORIENTATION_RIGHT;
-		return 0;
-	}
-	
-	public void setRotation(double angle) {
-		super.setRotation(angle);
-		setOrientation(getOrientation());
 	}
 	
 	/**
@@ -127,16 +79,9 @@ public class GmmlBrace extends GmmlGraphicsShape
 	 */
 	public void updateJdomElement() {
 		if(gdata.jdomElement != null) {
-			gdata.jdomElement.setAttribute("Notes", notes);
-			Element jdomGraphics = gdata.jdomElement.getChild("Graphics");
-			if(jdomGraphics !=null) {
-				jdomGraphics.setAttribute("CenterX", Integer.toString(getCenterX() * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("CenterY", Integer.toString(getCenterY() * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("Width", Integer.toString(getGmmlWidth()));
-				jdomGraphics.setAttribute("PicPointOffset", Integer.toString(getGmmlHeight()));
-				jdomGraphics.setAttribute("Orientation", (String)orientationMappings.get(getOrientation()));
-				jdomGraphics.setAttribute("Color", ColorConverter.color2HexBin(color));
-			}
+			gdata.updateNotesAndComment();
+			gdata.updateColor();
+			gdata.updateBraceData();
 		}
 	}
 	
@@ -173,7 +118,7 @@ public class GmmlBrace extends GmmlGraphicsShape
 		}
 		else 
 		{
-			c = SwtUtils.changeColor(c, this.color, e.display);
+			c = SwtUtils.changeColor(c, gdata.getColor(), e.display);
 		}
 		buffer.setForeground (c);
 		buffer.setLineStyle (SWT.LINE_SOLID);
@@ -184,8 +129,8 @@ public class GmmlBrace extends GmmlGraphicsShape
 		
 		int cx = getCenterX();
 		int cy = getCenterY();
-		int w = (int)width;
-		int d = (int)height;
+		int w = (int)gdata.getWidth();
+		int d = (int)gdata.getHeight();
 		
 		buffer.drawLine (cx + d/2, cy, cx + w/2 - d/2, cy); //line on the right
 		buffer.drawLine (cx - d/2, cy, cx - w/2 + d/2, cy); //line on the left
@@ -202,82 +147,5 @@ public class GmmlBrace extends GmmlGraphicsShape
 	protected void draw(PaintEvent e)
 	{
 		draw(e, e.gc);
-	}
-			
-	public List getAttributes() {
-		return attributes;
-	}
-	
-	public void updateToPropItems()
-	{
-		if (propItems == null)
-		{
-			propItems = new Hashtable();
-		}
-		
-		Object[] values = new Object[] {(double)getCenterX(), (double)getCenterY(),
-				width, height, getOrientation(), color, notes};
-		
-		for (int i = 0; i < attributes.size(); i++)
-		{
-			propItems.put(attributes.get(i), values[i]);
-		}
-	}
-	
-	public void updateFromPropItems()
-	{
-		markDirty();	
-		
-		centerX = ((Double)propItems.get(attributes.get(0)));
-		centerY = ((Double)propItems.get(attributes.get(1)));
-		width		= (Double)propItems.get(attributes.get(2));
-		height		= (Double)propItems.get(attributes.get(3));
-		setOrientation((Integer)propItems.get(attributes.get(4)));
-		color 		= (RGB)propItems.get(attributes.get(5));
-		notes		= (String)propItems.get(attributes.get(6));
-		calcStart();
-		markDirty();
-		setHandleLocation();
-		canvas.redrawDirtyRect();
-	}
-	
-	/**
-	 * Maps attributes to internal variables.
-	 * @param e - the element to map to a GmmlArc
-	 */
-	private void mapAttributes (Element e) {
-		// Map attributes
-		GmmlVision.log.trace("> Mapping element '" + e.getName()+ "'");
-		Iterator it = e.getAttributes().iterator();
-		while(it.hasNext()) {
-			Attribute at = (Attribute)it.next();
-			int index = attributes.indexOf(at.getName());
-			String value = at.getValue();
-			switch(index) {
-					case 0: // CenterX
-						centerX = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
-					case 1: // CenterY
-						centerY = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
-					case 2: // Width
-						setGmmlWidth(Double.parseDouble(value) / GmmlData.GMMLZOOM); break;
-					case 3: // PicPointOffset
-						setGmmlHeight(Double.parseDouble(value) / GmmlData.GMMLZOOM); break;
-					case 4: // Orientation
-						if(orientationMappings.indexOf(value) > -1)
-							setOrientation(orientationMappings.indexOf(value));
-						break;
-					case 5: // Color
-						this.color = ColorConverter.gmmlString2Color(value); break;
-					case 6: // Notes
-						this.notes = value;
-					case -1:
-						GmmlVision.log.trace("\t> Attribute '" + at.getName() + "' is not recognized");
-			}
-		}
-		// Map child's attributes
-		it = e.getChildren().iterator();
-		while(it.hasNext()) {
-			mapAttributes((Element)it.next());
-		}
 	}
 }

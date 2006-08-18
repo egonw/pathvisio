@@ -111,4 +111,13 @@ public abstract class GmmlGraphicsLine extends GmmlGraphics {
 		
 		setHandleLocation();
 	}
+
+	public void updateFromPropItems()
+	{
+		markDirty();	
+		gdata.updateFromPropItems();
+		markDirty();
+		setHandleLocation();
+		canvas.redrawDirtyRect();
+	}
 }
