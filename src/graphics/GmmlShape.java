@@ -71,21 +71,12 @@ public class GmmlShape extends GmmlGraphicsShape
 		setHandleLocation();
 	}
 	
-	/**
-	 * Constructor for mapping a JDOM Element.
-	 * @param e	- the GMML element which will be loaded as a GmmlShape
-	 * @param canvas - the GmmlDrawing this GmmlShape will be part of
-	 */
-	public GmmlShape(Element e, GmmlDrawing canvas) {
+	public GmmlShape (GmmlDrawing canvas, GmmlDataObject _gdata) {
 		this(canvas);
-		
-		gdata.mapShapeData(e);
-		gdata.mapColor(e);
-		gdata.mapNotesAndComment(e);
-		gdata.mapShapeType(e);
+		gdata = _gdata;		
 		setHandleLocation();
 	}
-			
+
 	public void createJdomElement(Document doc) {
 		Element e = new Element ("Shape");		
 		e.addContent(new Element("Graphics"));

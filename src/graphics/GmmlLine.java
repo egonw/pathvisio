@@ -62,21 +62,13 @@ public class GmmlLine extends GmmlGraphicsLine
 		setHandleLocation();
 	}
 	
-	/**
-	 * Constructor for mapping a JDOM Element.
-	 * @param e	- the GMML element which will be loaded as a GmmlLine
-	 * @param canvas - the GmmlDrawing this GmmlLine will be part of
-	 */
-	public GmmlLine (Element e, GmmlDrawing canvas) {
+	public GmmlLine (GmmlDrawing canvas, GmmlDataObject _gdata) {
 		this(canvas, 0, 0, 0, 0);
-		
-		gdata.mapLineData(e);
-		gdata.mapColor(e);
-		gdata.mapNotesAndComment(e);
-		
+		gdata = _gdata;		
 		setHandleLocation();
 	}
 
+	
 	public void createJdomElement(Document doc) {
 		Element e = new Element("Line");
 		e.addContent(new Element("Graphics"));

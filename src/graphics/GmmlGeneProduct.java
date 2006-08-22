@@ -88,20 +88,10 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 
 		setHandleLocation();
 	}
-	
-	/**
-	 * Constructor for mapping a JDOM Element.
-	 * @param e	- the GMML element which will be loaded as a GmmlGeneProduct
-	 * @param canvas - the GmmlDrawing this GmmlAGmmlGeneProductrc will be part of
-	 */
-	public GmmlGeneProduct(Element e, GmmlDrawing canvas) {
+		
+	public GmmlGeneProduct (GmmlDrawing canvas, GmmlDataObject _gdata) {
 		this(canvas);
-		
-		gdata.mapShapeData(e);
-		gdata.mapColor(e);
-		gdata.mapNotesAndComment(e);
-		gdata.mapGeneProductData(e);
-		
+		gdata = _gdata;		
 		setHandleLocation();
 	}
 	

@@ -123,21 +123,12 @@ public class GmmlLabel extends GmmlGraphicsShape
 		setHandleLocation();		
 	}
 	
-	/**
-	 * Constructor for mapping a JDOM Element.
-	 * @param e	- the GMML element which will be loaded as a GmmlLabel
-	 * @param canvas - the GmmlDrawing this GmmlLabel will be part of
-	 */
-	public GmmlLabel (Element e, GmmlDrawing canvas) {
+	public GmmlLabel (GmmlDrawing canvas, GmmlDataObject _gdata) {
 		this(canvas);
-		
-		gdata.mapShapeData(e);
-		gdata.mapColor(e);
-		gdata.mapLabelData(e);
-		gdata.mapNotesAndComment(e);
+		gdata = _gdata;		
 		setHandleLocation();
 	}
-	
+
 	public void setLabelText(String text) {
 		gdata.setLabelText (text);
 		

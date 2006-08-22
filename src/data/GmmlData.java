@@ -2,10 +2,9 @@ package data;
 
 import gmmlVision.GmmlVision;
 import gmmlVision.GmmlVisionWindow;
-import graphics.*;
+import graphics.GmmlDrawing;
 
 import java.io.*;
-import java.lang.reflect.Constructor;
 import java.util.*;
 
 import javax.xml.XMLConstants;
@@ -34,7 +33,7 @@ public class GmmlData
 	 */
 	final private static File xsdFile = new File("GMML_compat.xsd");
 	
-	private ArrayList<GmmlGraphicsData> dataObjects;
+	public List<GmmlDataObject> dataObjects = new ArrayList<GmmlDataObject>();
 	
 	private File xmlFile;
 	/**
@@ -43,22 +42,22 @@ public class GmmlData
 	 */
 	public File getXmlFile () { return xmlFile; }
 	public void setXmlFile (File file) { xmlFile = file; }
-	
-	private GmmlDrawing drawing;
 
 	/**
 	 * Contructor for this class, creates a new gmml document
 	 * @param drawing {@link GmmlDrawing} that displays the visual representation of the gmml pathway
 	 */
-	public GmmlData(GmmlDrawing drawing) 
+	public GmmlData() 
 	{
-		this.drawing = drawing;
 		GmmlVisionWindow window = GmmlVision.getWindow();
 		
-		GmmlMappInfo mpi = new GmmlMappInfo(drawing);		
-		mpi.setBoardSize(window.sc.getSize());
-		mpi.setWindowSize(window.getShell().getSize());
-		mpi.setName("New Pathway");
+		GmmlDataObject mapInfo = new GmmlDataObject();
+		mapInfo.setObjectType(ObjectType.MAPPINFO);
+		mapInfo.setBoardWidth(window.sc.getSize().x);
+		mapInfo.setBoardHeight(window.sc.getSize().y);
+		mapInfo.setWindowWidth(window.getShell().getSize().x);
+		mapInfo.setWindowHeight(window.getShell().getSize().y);
+		mapInfo.setMapInfoName("New Pathway");
 	}
 		
 	/**
@@ -66,10 +65,8 @@ public class GmmlData
 	 * @param file		String pointing to the gmml file to open
 	 * @param drawing	{@link GmmlDrawing} that displays the visual representation of the gmml pathway
 	 */
-	public GmmlData(String file, GmmlDrawing drawing) throws Exception
+	public GmmlData(String file) throws Exception
 	{
-		// Create the drawing
-		this.drawing = drawing;
 		// Start XML processing
 		GmmlVision.log.info("Start reading the Gmml file: " + file);
 		SAXBuilder builder  = new SAXBuilder(false); // no validation when reading the xml file
@@ -80,60 +77,17 @@ public class GmmlData
 	}
 	
 	/**
-	 * Method to get the private property drawing
-	 * @return drawing
-	 */
-	public GmmlDrawing getDrawing()
-	{
-		return drawing;
-	}
-	
-	/**
 	 * Maps the element specified to a GmmlGraphics object
 	 * @param e		the JDOM {@link Element} to map
 	 */
 	private void mapElement(Element e) {
 		// Check if a GmmlGraphics exists for this element
 		// Assumes that classname = 'Gmml' + Elementname
-		try {
-			Class cl = Class.forName("graphics.Gmml"+e.getName());
-			Constructor con = cl.getConstructor(new Class[] { Element.class, GmmlDrawing.class });
-			GmmlVision.log.trace("Mapping gmml element " + e.getName());
-			Object obj = con.newInstance(new Object[] { e, drawing });
-		}
-		catch (ClassNotFoundException cnfe)
-		{
-			GmmlVision.log.error(e.getName() + " could not be mapped", cnfe);
-		}
-		catch (NoSuchMethodException nsme)
-		{
-			GmmlVision.log.trace("The GmmlGraphics class representing '" + e.getName() + 
-					"' has no constructor for a JDOM element");
-		}
-		catch (Exception ex)
-		{
-			GmmlVision.log.error("while mapping gmml elements: " + ex.getMessage(), ex);
-		}
+		GmmlDataObject o = new GmmlDataObject();
+		o.mapComplete(e);
+		dataObjects.add(o);
 	}
 
-	/**
-	 * Maps the contents of the JDOM tree to a GmmlDrawing
-	 */
-	public void toGmmlGraphics(Document doc) {
-		// Get the pathway element
-		Element root = doc.getRootElement();
-		drawing.setMappInfo(new GmmlMappInfo(drawing, root));
-		
-		drawing.setSize(drawing.getMappInfo().getBoardSize());
-//		drawing.gmmlVision.getShell().setSize(drawing.mappInfo.windowWidth, drawing.mappInfo.windowHeight);
-		
-		// Iterate over direct children of the root element
-		Iterator it = root.getChildren().iterator();
-		while (it.hasNext()) {
-			mapElement((Element)it.next());
-		}
-	}
-	
 	/**
 	 * validates a JDOM document against the xml-schema definition specified by 'xsdFile'
 	 * @param doc the document to validate
@@ -210,8 +164,15 @@ public class GmmlData
 			Document doc = builder.build(file);
 
 			// Copy the pathway information to a GmmlDrawing
-			toGmmlGraphics(doc);
-
+			Element root = doc.getRootElement();
+			
+			mapElement(root); // MappInfo
+			
+			// Iterate over direct children of the root element
+			Iterator it = root.getChildren().iterator();
+			while (it.hasNext()) {
+				mapElement((Element)it.next());
+			}
 		}
 		catch(JDOMParseException pe) 
 		{

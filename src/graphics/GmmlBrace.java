@@ -62,12 +62,9 @@ public class GmmlBrace extends GmmlGraphicsShape
 	 * @param e	- the GMML element which will be loaded as a GmmlBrace
 	 * @param canvas - the GmmlDrawing this GmmlBrace will be part of
 	 */
-	public GmmlBrace(Element e, GmmlDrawing canvas) {
+	public GmmlBrace(GmmlDrawing canvas, GmmlDataObject _gdata) {
 		this(canvas);
-		
-		gdata.mapNotesAndComment(e);
-		gdata.mapBraceData(e);
-		gdata.mapColor(e);		
+		gdata = _gdata;		
 		setHandleLocation();
 	}
 	

@@ -121,7 +121,7 @@ public abstract class GmmlVision {
 		
 		// initialize new JDOM gmml representation and read the file
 		try { 
-			_gmmlData = new GmmlData(pwf, _drawing);
+			_gmmlData = new GmmlData(pwf);
 		} catch(Exception e) {
 			MessageDialog.openError(getWindow().getShell(), 
 					"Unable to open Gmml file", e.getMessage());
@@ -132,6 +132,7 @@ public abstract class GmmlVision {
 		{
 			drawing = _drawing;
 			gmmlData = _gmmlData;
+			drawing.fromGmmlData(_gmmlData);
 			firePropertyChange(new PropertyEvent(drawing, PROPERTY_OPEN_PATHWAY));
 		}
 		
@@ -141,8 +142,9 @@ public abstract class GmmlVision {
 	 * Create a new pathway (drawing + gmml data)
 	 */
 	public static void newPathway() {
+		gmmlData = new GmmlData();
 		drawing = getWindow().createNewDrawing();
-		gmmlData = new GmmlData(drawing);
+		drawing.fromGmmlData(gmmlData);
 		firePropertyChange(new PropertyEvent(drawing, PROPERTY_NEW_PATHWAY));
 	}
 	

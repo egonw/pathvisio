@@ -71,7 +71,8 @@ PaintListener, MouseTrackListener, KeyListener
 	 * when displayed on the drawing)
 	 */
 	GmmlMappInfo mappInfo;
-		
+	GmmlData data;
+	
 	GmmlSelectionBox s; 
 		
 	private boolean editMode;
@@ -81,6 +82,34 @@ PaintListener, MouseTrackListener, KeyListener
 	 */
 	public boolean isEditMode() { return editMode; }
 	
+	/**
+	 * Maps the contents of a pathway to a GmmlDrawing
+	 */	
+	public void fromGmmlData(GmmlData _data)
+	{		
+		data = _data;
+			
+		for (GmmlDataObject o : data.dataObjects)
+		{
+			switch (o.getObjectType())
+			{
+				case ObjectType.BRACE: drawingObjects.add(new GmmlBrace(this, o)); break;
+				case ObjectType.GENEPRODUCT: drawingObjects.add(new GmmlGeneProduct(this, o)); break;
+				case ObjectType.SHAPE: drawingObjects.add(new GmmlShape(this, o)); break;
+				case ObjectType.LINE: drawingObjects.add(new GmmlLine(this, o)); break;
+				case ObjectType.MAPPINFO: 
+					GmmlMappInfo mi = new GmmlMappInfo(this, o);
+					drawingObjects.add(mi); 
+					setMappInfo(mi); 
+					break;				
+				case ObjectType.LABEL: drawingObjects.add(new GmmlLabel(this, o)); break;					
+			}
+						
+		}
+		setSize(mappInfo.getBoardSize());
+//		drawing.gmmlVision.getShell().setSize(drawing.mappInfo.windowWidth, drawing.mappInfo.windowHeight);
+	}
+
 	private int newGraphics = NEWNONE;
 	/**
 	 * Method to set the new graphics type that has to be added next time the user clicks on the

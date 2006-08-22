@@ -39,12 +39,11 @@ public class GmmlMappInfo extends GmmlGraphics {
 		gdata.setObjectType(ObjectType.MAPPINFO);		
 	}
 	
-	public GmmlMappInfo(GmmlDrawing canvas, Element e) 
-	{
+	public GmmlMappInfo (GmmlDrawing canvas, GmmlDataObject _gdata) {
 		this(canvas);
-		gdata.mapMappInfoData(e);
+		gdata = _gdata;
 	}
-	
+
 	public void setName(String name) { 
 		markDirty();
 		gdata.setMapInfoName(name);  
