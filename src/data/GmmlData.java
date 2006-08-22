@@ -190,7 +190,6 @@ public class GmmlData
 		}
 	}
 	
-	/*
 	public void readFromMapp (File file) throws ConverterException
 	{
         String inputString = file.getAbsolutePath();
@@ -201,18 +200,19 @@ public class GmmlData
         // Copy the info table to the new gmml pathway
         
         // Copy the objects table to the new gmml pahtway
-    	MappToGmml.copyMappInfo(mappInfo, doc);
-        MappToGmml.copyMappObjects(mappObjects, doc);        	
+    	MappToGmml.copyMappInfo(mappInfo, this);
+        MappToGmml.copyMappObjects(mappObjects, this);        	
 	}
+	
 	
 	public void writeToMapp (File file) throws ConverterException
 	{
-		String[][] mappInfo = MappToGmml.uncopyMappInfo (doc);
-		List mappObjects = MappToGmml.uncopyMappObjects (doc);
+		String[][] mappInfo = MappToGmml.uncopyMappInfo (this);
+		List mappObjects = MappToGmml.uncopyMappObjects (this);
 		
 		MappFile.exportMapp (file.getAbsolutePath(), mappInfo, mappObjects);		
 	}
-	*/
+	
 	
 	public final static String[] systemCodes = new String[] 	{ 
 		"D", "F", "G", "I", "L", "M",

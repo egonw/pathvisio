@@ -87,35 +87,39 @@ public class MappToGmml
             "Modify", "Remarks", "BoardWidth", "BoardHeight",
             "WindowWidth", "WindowHeight", "Notes"};
 
-	public static String[][] uncopyMappInfo (Document doc)
+	public static String[][] uncopyMappInfo (GmmlData data)
 	{
 		String[][] mappInfo = new String[2][16];
 		
-		Element root = doc.getRootElement();
+		GmmlDataObject mi = null;
+		for (GmmlDataObject o : data.dataObjects)
+		{
+			if (o.getObjectType() == ObjectType.MAPPINFO)
+				mi = o;
+		}
+			
+		mappInfo[1][icolTitle] = mi.getMapInfoName();
+		mappInfo[1][icolVersion] = mi.getVersion();
+		mappInfo[1][icolAuthor] = mi.getAuthor();
+		mappInfo[1][icolMaint] = mi.getMaintainedBy();
+		mappInfo[1][icolEmail] = mi.getEmail();
+		mappInfo[1][icolCopyright] = mi.getAuthor();
+		mappInfo[1][icolModify] = mi.getLastModified();
 		
-		mappInfo[1][icolTitle] = root.getAttributeValue("Name");
-		mappInfo[1][icolVersion] = root.getAttributeValue("Version");
-		mappInfo[1][icolAuthor] = root.getAttributeValue("Author");
-		mappInfo[1][icolMaint] = root.getAttributeValue("Maintained-By");
-		mappInfo[1][icolEmail] = root.getAttributeValue("Email");
-		mappInfo[1][icolCopyright] = root.getAttributeValue("Availability");
-		mappInfo[1][icolModify] = root.getAttributeValue("Last-Modified");
+		mappInfo[1][icolNotes] = mi.getNotes();
+		mappInfo[1][icolRemarks] = mi.getComment();		
 		
-		mappInfo[1][icolNotes] = root.getChildText("Notes");
-		mappInfo[1][icolRemarks] = root.getChildText("Comment");
-		
-		Element graphics = root.getChild("Graphics");
-		mappInfo[1][icolBoardWidth] = graphics.getAttributeValue("BoardWidth");
-		mappInfo[1][icolBoardHeight] = graphics.getAttributeValue("BoardHeight");
-		mappInfo[1][icolWindowWidth] = graphics.getAttributeValue("WindowWidth");
-		mappInfo[1][icolWindowHeight] = graphics.getAttributeValue("WindowHeight");
+		mappInfo[1][icolBoardWidth] = "" + mi.getBoardWidth();
+		mappInfo[1][icolBoardHeight] = "" + mi.getBoardHeight();
+		mappInfo[1][icolWindowWidth] = "" + mi.getWindowWidth();
+		mappInfo[1][icolWindowHeight] = "" + mi.getWindowHeight();
 		
 		return mappInfo;
 	}
 	
 	// This method copies the Info table of the genmapp mapp to a new gmml
 	// pathway
-	public static void copyMappInfo( String[][] mappInfo, Document doc)
+	public static void copyMappInfo( String[][] mappInfo, GmmlData data)
 	{
 
 		/* Data is lost when converting from GenMAPP to GMML:
@@ -148,35 +152,24 @@ public class MappToGmml
 		*
 		*/
 
-		Element root = new Element("Pathway");
-		doc.setRootElement(root);
-
-		root.setAttribute("Name", mappInfo[1][icolTitle]);
-		root.setAttribute("Data-Source", "GenMAPP 2.0");
-		root.setAttribute("Version", mappInfo[1][icolVersion]);
-		root.setAttribute("Author", mappInfo[1][icolAuthor]);
-		root.setAttribute("Maintained-By", mappInfo[1][icolMaint]);
-		root.setAttribute("Email", mappInfo[1][icolEmail]);
-		root.setAttribute("Availability", mappInfo[1][icolCopyright]);
-		root.setAttribute("Last-Modified", mappInfo[1][icolModify]);
-
-		// Info.Notes
-		Element notes = new Element("Notes");
-		notes.addContent(mappInfo[1][icolNotes]);
-		root.addContent(notes);
+		GmmlDataObject o = new GmmlDataObject();
+		o.setObjectType(ObjectType.MAPPINFO);
+		o.setMapInfoName(mappInfo[1][icolTitle]);
+		o.setMapInfoDataSource("GenMAPP 2.0");
+		o.setVersion(mappInfo[1][icolVersion]);
+		o.setAuthor(mappInfo[1][icolAuthor]);
+		o.setMaintainedBy(mappInfo[1][icolMaint]);
+		o.setEmail(mappInfo[1][icolEmail]);
+		o.setAvailability(mappInfo[1][icolCopyright]);
+		o.setLastModified(mappInfo[1][icolModify]);
 		
-		// Info.Remarks
-		Element comments = new Element("Comment");
-		comments.addContent(mappInfo[1][icolRemarks]);
-		root.addContent(comments);
+		o.setNotes(mappInfo[1][icolNotes]);
+		o.setComment(mappInfo[1][icolRemarks]);		
 
-		Element graphics = new Element("Graphics");
-		root.addContent(graphics);
-
-		graphics.setAttribute("BoardWidth", mappInfo[1][icolBoardWidth]);
-		graphics.setAttribute("BoardHeight", mappInfo[1][icolBoardHeight]);
-		graphics.setAttribute("WindowWidth", mappInfo[1][icolWindowWidth]);
-		graphics.setAttribute("WindowHeight", mappInfo[1][icolWindowHeight]);
+		o.setBoardWidth(Double.parseDouble(mappInfo[1][icolBoardWidth]));
+		o.setBoardHeight(Double.parseDouble(mappInfo[1][icolBoardHeight]));
+		o.setWindowWidth(Double.parseDouble(mappInfo[1][icolWindowWidth]));
+		o.setWindowHeight(Double.parseDouble(mappInfo[1][icolWindowHeight]));
 	}
     
 	// these constants define the columns in the Objects table.
@@ -215,16 +208,13 @@ public class MappToGmml
     	return null;
     }
 
-	public static List uncopyMappObjects(Document doc) throws ConverterException
+	public static List uncopyMappObjects(GmmlData data) throws ConverterException
 	{
 		List result = new ArrayList();
 		
-		Element root = doc.getRootElement();
-		Iterator i = root.getChildren().iterator();
-		while (i.hasNext())
+		for (GmmlDataObject o : data.dataObjects)
 		{
-			Element e = (Element)(i.next());
-			String type = e.getName();
+			int objectType = o.getObjectType();
 			String[] row = new String[18];
 			
 			// init:
@@ -237,51 +227,58 @@ public class MappToGmml
 			row[colRotation] = "0.0";
 			row[colColor] = "-1";
 			
-			if (type.equals("Line"))
-				unmapLineType(e, row);
-			else if (type.equals("Brace"))
-				unmapBraceType(e, row);
-			else if (type.equals("GeneProduct"))
-				unmapGeneProductType(e, row);
-			else if (type.equals("InfoBox"))
-				unmapInfoBoxType(e, row);
-			else if (type.equals("Label"))
-				unmapLabelType(e, row);
-			else if (type.equals("Legend"))
-				unmapLegendType(e, row);
-			else if (type.equals("Shape"))
-				unmapShapeType(e, row);
-			else if (type.equals("FixedShape"))
-				unmapFixedShapeType(e, row);
-			else if (type.equals("ComplexShape"))
-				unmapComplexShapeType(e, row);
-			else if (type.equals("Comment")) // ignore
-				continue;
-			else if (type.equals("Notes")) // ignore
-				continue;
-			else if (type.equals("Graphics")) // ignore
-				continue;
-			else throw new ConverterException ("Invalid element encountered: " + type);
-			
-	    	String notes = e.getChildText("Notes");
-	    	if (notes != null && notes.equals("")) notes = null;
-	    	row[colNotes] = notes;
-
-	    	String comment = e.getChildText("Comment");
-	    	if (comment != null && comment.equals("")) comment = null;
-	    	row[colRemarks] = comment;    	
-
+			switch (objectType)
+			{
+				case ObjectType.LINE:
+					unmapNotesAndComments (o, row);
+					unmapLineType(o, row);
+					break;
+				case ObjectType.BRACE:
+					unmapNotesAndComments (o, row);
+					unmapBraceType(o, row);
+					break;
+				case ObjectType.GENEPRODUCT:	
+					unmapNotesAndComments (o, row);
+					unmapGeneProductType(o, row);
+					break;
+				case ObjectType.INFOBOX:
+					unmapInfoBoxType(o, row);
+					break;
+				case ObjectType.LABEL:
+					unmapNotesAndComments (o, row);
+					unmapLabelType(o, row);
+					break;
+				case ObjectType.LEGEND:
+					unmapLegendType(o, row);
+					break;
+				case ObjectType.SHAPE:			
+					unmapNotesAndComments (o, row);
+					unmapShapeType(o, row);
+					break;
+				case ObjectType.FIXEDSHAPE:					
+					unmapNotesAndComments (o, row);
+					unmapFixedShapeType(o, row);
+					break;
+				case ObjectType.COMPLEXSHAPE:			
+					unmapNotesAndComments (o, row);
+					unmapComplexShapeType(o, row);
+					break;
+			}
 			result.add(row);
 		}
 				
 		return result;
 	}
-	
+
+	private static void unmapNotesAndComments(GmmlDataObject o, String[] row)
+	{
+		blah!
+	}
+
 	// This list adds the elements from the OBJECTS table to the new gmml
 	// pathway
-    public static void copyMappObjects(String[][] mappObjects, Document doc) throws ConverterException
+    public static void copyMappObjects(String[][] mappObjects, GmmlData data) throws ConverterException
     {
-    	Element root = doc.getRootElement();
     	List elementList = new ArrayList();
     	
         log.trace ("CONVERTING OBJECTS TABLE TO GMML");
@@ -289,29 +286,21 @@ public class MappToGmml
 		// Create the GenMAPP --> GMML mappings list for use in the switch
 		// statement
 
-		String[] types = { 
+		List typeslist = Arrays.asList(new String[] { 
 				"Arrow", "DottedArrow", "DottedLine", "Line",
 				"Brace", "Gene", "InfoBox", "Label", "Legend", "Oval",
 				"Rectangle", "TBar", "Receptor", "LigandSq",  "ReceptorSq",
 				"LigandRd", "ReceptorRd", "CellA", "Arc", "Ribosome",
 				"OrganA", "OrganB", "OrganC", "ProteinB", "Poly", "Vesicle"
-		};
-
-		List typeslist = new ArrayList();
-		int index = 0;
-
-		for(int i=0; i<types.length; i++)
-		{
-				typeslist.add(types[i]);
-		}
+		});
 
 		/*index 0 are heades*//*last row is always null*/
 
 		for(int i=1; i<mappObjects.length-1; i++)
 		{
-			Element e = null;
+			GmmlDataObject o = null;
 			
-			index = typeslist.indexOf(mappObjects[i][colType]);
+			int index = typeslist.indexOf(mappObjects[i][colType]);
 			
 			switch(index) {
 			
@@ -325,10 +314,10 @@ public class MappToGmml
 					case 14: /*ReceptorSq*/         
 					case 15: /*LigandRd*/
 					case 16: /*ReceptorRd*/
-							e = mapLineType(mappObjects[i]);							
+							o = mapLineType(mappObjects[i]);							
 							break;							
 					case 4: /*Brace*/
-							e = mapBraceType(mappObjects[i]);							
+							o = mapBraceType(mappObjects[i]);							
 							break;							
 					case 5: /*Gene*/
 							e = mapGeneProductType(mappObjects[i]);
@@ -396,14 +385,14 @@ public class MappToGmml
 		Iterator i = elementList.iterator();
 		while (i.hasNext())
 		{
-			Element e = ((Element)i.next());
+			GmmlDataObject o = ((Element)i.next());
 			if (e != null)
 				root.addContent(e);
 		}
     }
 
     
-    public static void unmapLineType (Element e, String[] mappObject) throws ConverterException
+    public static void unmapLineType (GmmlDataObject o, String[] mappObject) throws ConverterException
     {    	
     	String gmmlType = e.getAttributeValue("Type");
 		String style = e.getAttributeValue("Style");
@@ -445,9 +434,9 @@ public class MappToGmml
 			"ReceptorSquare", "LigandRound", "ReceptorRound"};
 
 	
-	public static Element mapLineType(String [] mappObject) throws ConverterException
+	public static GmmlDataObject mapLineType(String [] mappObject) throws ConverterException
 	{
-    	Element e = new Element("Line");
+    	GmmlDataObject o = new Element("Line");
     	
 		String type = mappObject[colType];
     	String style = "Solid";		
@@ -468,10 +457,10 @@ public class MappToGmml
         
         e.addContent(graphics);
 
-        return e;
+        return o;
 	}
     
-    public static void unmapBraceType (Element e, String[] mappObject) throws ConverterException
+    public static void unmapBraceType (GmmlDataObject o, String[] mappObject) throws ConverterException
     {    	
     	mappObject[colType] = "Brace";    	
     	
@@ -499,9 +488,9 @@ public class MappToGmml
     	mappObject[colColor] = ConvertType.toMappColor(graphics.getAttributeValue("Color"));
     }
 
-    public static Element mapBraceType(String[] mappObject) throws ConverterException
+    public static GmmlDataObject mapBraceType(String[] mappObject) throws ConverterException
     {
-        Element e = new Element("Brace");
+        GmmlDataObject o = new Element("Brace");
 
         Element graphics = new Element ("Graphics");
         
@@ -528,10 +517,10 @@ public class MappToGmml
 		
         e.addContent(graphics);
             
-        return e;          
+        return o;          
     }
     
-    public static void unmapGeneProductType (Element e, String[] mappObject) throws ConverterException
+    public static void unmapGeneProductType (GmmlDataObject o, String[] mappObject) throws ConverterException
     {    	
     	mappObject[colType] = "Gene";
     	mappObject[colSystemCode] =
@@ -564,9 +553,9 @@ public class MappToGmml
 		"WormBase", "ZFIN", "Affy", "Other", ""
 		};
 
-    public static Element mapGeneProductType(String[] mappObject) throws ConverterException
+    public static GmmlDataObject mapGeneProductType(String[] mappObject) throws ConverterException
 	{
-        Element e = new Element("GeneProduct");
+        GmmlDataObject o = new Element("GeneProduct");
     
         if (mappObject[colSystemCode] == null) mappObject[colSystemCode] = "";
         if (mappObject[colLinks] == null) mappObject[colLinks] = "";
@@ -593,20 +582,20 @@ public class MappToGmml
         
         e.addContent(graphics);
 
-        return e;			
+        return o;			
 	}
     
-	public static Element mapInfoBoxType (String[] mappObject)
+	public static GmmlDataObject mapInfoBoxType (String[] mappObject)
 	{
-        Element e = new Element("InfoBox");
+        GmmlDataObject o = new Element("InfoBox");
         
         e.setAttribute("CenterX", mappObject[colCenterX]);
         e.setAttribute("CenterY", mappObject[colCenterY]);
                 
-        return e;
+        return o;
 	}
 	
-	public static void unmapInfoBoxType (Element e, String[] mappObject)
+	public static void unmapInfoBoxType (GmmlDataObject o, String[] mappObject)
     {    	
     	mappObject[colType] = "InfoBox";
     	
@@ -614,17 +603,17 @@ public class MappToGmml
     	mappObject[colCenterY] = e.getAttributeValue("CenterY");    	
     }
 
-	public static Element mapLegendType (String[] mappObject)
+	public static GmmlDataObject mapLegendType (String[] mappObject)
 	{
-        Element e = new Element("Legend");
+        GmmlDataObject o = new Element("Legend");
         
         e.setAttribute("CenterX", mappObject[colCenterX]);
         e.setAttribute("CenterY", mappObject[colCenterY]);
                 
-        return e;
+        return o;
 	}
 	
-	public static void unmapLegendType (Element e, String[] mappObject)
+	public static void unmapLegendType (GmmlDataObject o, String[] mappObject)
     {    	
     	mappObject[colType] = "Legend";
     	
@@ -637,9 +626,9 @@ public class MappToGmml
     final static int styleUnderline = 4;
     final static int styleStrikethru = 8;
     
-    public static Element mapLabelType(String[] mappObject) 
+    public static GmmlDataObject mapLabelType(String[] mappObject) 
     {
-        Element e = new Element("Label");
+        GmmlDataObject o = new Element("Label");
 
         String label = mappObject[colLabel];
         e.setAttribute("TextLabel", label == null ? "" : label);
@@ -672,10 +661,10 @@ public class MappToGmml
 
         e.addContent(graphics);
         
-        return e;
+        return o;
     }
 
-    public static void unmapLabelType (Element e, String[] mappObject)
+    public static void unmapLabelType (GmmlDataObject o, String[] mappObject)
     {    	
     	mappObject[colType] = "Label";
     	mappObject[colLabel] = e.getAttributeValue("TextLabel");
@@ -706,9 +695,9 @@ public class MappToGmml
     	mappObject[colSystemCode] = new String (stylechars);    	
     }
     
-    public static Element mapShapeType(String[] mappObject)
+    public static GmmlDataObject mapShapeType(String[] mappObject)
     {
-        Element e = new Element("Shape");
+        GmmlDataObject o = new Element("Shape");
 
         e.setAttribute("Type", mappObject[colType]);
         
@@ -723,10 +712,10 @@ public class MappToGmml
 		
         e.addContent(graphics);
         
-        return e;
+        return o;
     }
     
-    public static void unmapShapeType (Element e, String[] mappObject)
+    public static void unmapShapeType (GmmlDataObject o, String[] mappObject)
     {    	
     	mappObject[colType] = e.getAttributeValue("Type");
     	
@@ -740,9 +729,9 @@ public class MappToGmml
     	
     }
     
-    public static Element mapFixedShapeType( String[] mappObject)
+    public static GmmlDataObject mapFixedShapeType( String[] mappObject)
     {
-        Element e = new Element ("FixedShape");
+        GmmlDataObject o = new Element ("FixedShape");
     	e.setAttribute("Type", mappObject[colType]);
         Element graphics = new Element ("Graphics");
         
@@ -751,10 +740,10 @@ public class MappToGmml
 
         e.addContent(graphics);
         
-        return e;        
+        return o;        
     }
 
-    public static void unmapFixedShapeType (Element e, String[] mappObject)
+    public static void unmapFixedShapeType (GmmlDataObject o, String[] mappObject)
     {    	
     	String type = e.getAttributeValue("Type");
     	mappObject[colType] = type;
@@ -773,9 +762,9 @@ public class MappToGmml
     }
         
     
-    public static Element mapComplexShapeType(String[] mappObject) throws ConverterException 
+    public static GmmlDataObject mapComplexShapeType(String[] mappObject) throws ConverterException 
 	{       		
-    	Element e = new Element("ComplexShape");
+    	GmmlDataObject o = new Element("ComplexShape");
         Element graphics = new Element ("Graphics");
         
         String type;
@@ -814,10 +803,10 @@ public class MappToGmml
                 
         e.addContent(graphics);
         
-        return e;
+        return o;
     }
     
-    public static void unmapComplexShapeType (Element e, String[] mappObject)
+    public static void unmapComplexShapeType (GmmlDataObject o, String[] mappObject)
     {   
     	String type = e.getAttributeValue("Type");
     	if (type.equals("Triangle"))

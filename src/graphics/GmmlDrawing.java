@@ -821,5 +821,4 @@ PaintListener, MouseTrackListener, KeyListener
 		}
 	}
 	
-	
 } // end of class
