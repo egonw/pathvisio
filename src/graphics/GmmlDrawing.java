@@ -353,25 +353,11 @@ PaintListener, MouseTrackListener, KeyListener
 	}
 
 	/**
-	 * Updates the JDOM nodes for all elements on this drawing
-	 */
-	public void updateJdomElements() {
-		// Update jdomElement for every graphics object
-		Iterator it = drawingObjects.iterator();
-		while(it.hasNext()) {
-			GmmlDrawingObject o = (GmmlDrawingObject)it.next();
-			if(o instanceof GmmlGraphics) {
-				((GmmlGraphics)o).updateJdomElement();
-			}
-		}
-	}
-
-	/**
 	 * Updates the propertytable to display information about the given GmmlDrawingObject
 	 * @param o object to update the property table for, if instanceof {@link GmmlHandle}, 
 	 * then the parent object is used, if null, then the property table is cleared
 	 */
-	public void updatePropertyTable(GmmlDrawingObject o)
+	private void updatePropertyTable(GmmlDrawingObject o)
 	{
 		GmmlGraphics g = null;
 		if (o != null)
@@ -383,12 +369,20 @@ PaintListener, MouseTrackListener, KeyListener
 			if (o instanceof GmmlGraphics)
 			{
 				g = (GmmlGraphics)o;
-				g.updateToPropItems();
+				g.gdata.updateToPropItems();
 			}
 		}
-		GmmlVision.getWindow().propertyTable.setGraphics(g);
+		updatePropertyTable (g.gdata);
 	}
-	
+
+	private void updatePropertyTable(GmmlDataObject o)
+	{
+		if (o != null)
+		{
+			GmmlVision.getWindow().propertyTable.setGraphics(o);
+		}		
+	}
+
 	/**
 	 * Updates the {@link GmmlBpBrowser} to display information about the given GmmlDrawingObject
 	 * (currently only if it's a {@link GmmlGeneProduct})
@@ -562,34 +556,32 @@ PaintListener, MouseTrackListener, KeyListener
 		GmmlGraphics g = null;
 		GmmlHandle h = null;
 		GmmlLine l = null;
-		Document d = GmmlVision.getGmmlData().getDocument();
-		
 		switch(newGraphics) {
 		case NEWNONE:
 			return;
 		case NEWLINE:
-			g = l = new GmmlLine(e.x, e.y, e.x, e.y,stdRGB, this, d);
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y,stdRGB, this);
 			l.gdata.setLineStyle (LineStyle.SOLID);
 			l.gdata.setLineType (LineType.LINE);
 			h = l.handleEnd;
 			isDragging = true;
 			break;
 		case NEWLINEARROW:
-			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this);
 			l.gdata.setLineStyle (LineStyle.SOLID);
 			l.gdata.setLineType (LineType.ARROW);
 			h = l.handleEnd;
 			isDragging = true;
 			break;
 		case NEWLINEDASHED:
-			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this);
 			l.gdata.setLineStyle (LineStyle.DASHED);
 			l.gdata.setLineType (LineType.LINE);
 			h = l.handleEnd;
 			isDragging = true;
 			break;
 		case NEWLINEDASHEDARROW:
-			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this);
 			l.gdata.setLineStyle (LineStyle.DASHED);
 			l.gdata.setLineType (LineType.ARROW);
 			h = l.handleEnd;
@@ -597,66 +589,66 @@ PaintListener, MouseTrackListener, KeyListener
 			break;
 		case NEWLABEL:
 			g = new GmmlLabel(e.x, e.y, (int)(GmmlLabel.INITIAL_WIDTH * zoomFactor),
-					(int)(GmmlLabel.INITIAL_HEIGHT * zoomFactor), this, GmmlVision.getGmmlData().getDocument());
+					(int)(GmmlLabel.INITIAL_HEIGHT * zoomFactor), this);
 			((GmmlLabel)g).createTextControl();
 			h = null;
 			break;
 		case NEWARC:
-			g = new GmmlShape(e.x, e.y, 1, 1, ShapeType.ARC, stdRGB, 0, this, d);
+			g = new GmmlShape(e.x, e.y, 1, 1, ShapeType.ARC, stdRGB, 0, this);
 			h = ((GmmlShape)g).handleSE;
 			isDragging = true;
 			break;
 		case NEWBRACE:
-			g = new GmmlBrace(e.x, e.y, 1, 1, OrientationType.RIGHT, stdRGB, this, d);
+			g = new GmmlBrace(e.x, e.y, 1, 1, OrientationType.RIGHT, stdRGB, this);
 			h = ((GmmlBrace)g).handleSE;
 			isDragging = true;
 			break;
 		case NEWGENEPRODUCT:
 			g = new GmmlGeneProduct(e.x, e.y, GmmlGeneProduct.INITIAL_WIDTH * zoomFactor, 
-					GmmlGeneProduct.INITIAL_HEIGHT * zoomFactor, "Gene", "", stdRGB, this, d);
+					GmmlGeneProduct.INITIAL_HEIGHT * zoomFactor, "Gene", "", stdRGB, this);
 //			((GmmlGeneProduct)g).createTextControl();
 			h = null;
 			break;
 		case NEWRECTANGLE:
-			g = new GmmlShape(e.x, e.y, 1, 1, ShapeType.RECTANGLE, stdRGB, 0, this, d);
+			g = new GmmlShape(e.x, e.y, 1, 1, ShapeType.RECTANGLE, stdRGB, 0, this);
 			h = ((GmmlShape)g).handleSE;
 			isDragging = true;
 			break;
 		case NEWOVAL:
-			g = new GmmlShape(e.x, e.y, 50 * zoomFactor, 50 * zoomFactor, ShapeType.OVAL, stdRGB, 0, this, d);
+			g = new GmmlShape(e.x, e.y, 50 * zoomFactor, 50 * zoomFactor, ShapeType.OVAL, stdRGB, 0, this);
 			h = ((GmmlShape)g).handleSE;
 			isDragging = true;
 			break;
 		case NEWTBAR:
-			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this);
 			h = ((GmmlLine)g).handleEnd;
 			l.gdata.setLineStyle (LineStyle.SOLID);
 			l.gdata.setLineType (LineType.TBAR);			
 			isDragging = true;
 			break;
 		case NEWRECEPTORROUND:
-			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this);
 			h = ((GmmlLine)g).handleEnd;
 			l.gdata.setLineStyle (LineStyle.SOLID);
 			l.gdata.setLineType (LineType.RECEPTOR_ROUND);			
 			isDragging = true;
 			break;
 		case NEWRECEPTORSQUARE:
-			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this);
 			h = ((GmmlLine)g).handleEnd;
 			l.gdata.setLineStyle (LineStyle.SOLID);
 			l.gdata.setLineType (LineType.RECEPTOR_SQUARE);			
 			isDragging = true;
 			break;
 		case NEWLIGANDROUND:
-			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this);
 			h = ((GmmlLine)g).handleEnd;
 			l.gdata.setLineStyle (LineStyle.SOLID);
 			l.gdata.setLineType (LineType.LIGAND_ROUND);			
 			isDragging = true;
 			break;
 		case NEWLIGANDSQUARE:
-			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this, d);
+			g = l = new GmmlLine(e.x, e.y, e.x, e.y, stdRGB, this);
 			h = ((GmmlLine)g).handleEnd;
 			l.gdata.setLineStyle (LineStyle.SOLID);
 			l.gdata.setLineType (LineType.LIGAND_SQUARE);			
@@ -797,10 +789,6 @@ PaintListener, MouseTrackListener, KeyListener
 		for(GmmlDrawingObject o : toRemove)
 		{
 			drawingObjects.remove(o);
-			if(o instanceof GmmlGraphics) {
-				Element e = ((GmmlGraphics)o).getJdomElement();
-				GmmlVision.getGmmlData().getDocument().getRootElement().removeContent(e);
-			}
 		}
 	}
 	

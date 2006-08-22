@@ -1,10 +1,7 @@
 package gmmlVision;
 
-import graphics.GmmlGeneProduct;
-import graphics.GmmlGraphics;
-import graphics.GmmlLine;
-import graphics.GmmlMappInfo;
-import graphics.GmmlShape;
+import graphics.*;
+import data.*;
 
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -33,14 +30,14 @@ import data.GmmlData;
 
 import util.TableColumnResizer;
 
-public class GmmlPropertyTable extends Composite {
+public class GmmlPropertyTable extends Composite implements GmmlListener {
 	public TableViewer tableViewer;
 	CellEditor[] cellEditors = new CellEditor[2];
 	TextCellEditor textEditor;
 	ColorCellEditor colorEditor;
 	ComboBoxCellEditor comboBoxEditor;
 	
-	public GmmlGraphics g;
+	public GmmlDataObject g;
 
 	final static String[] colNames = new String[] {"Property", "Value"};
 	
@@ -119,7 +116,7 @@ public class GmmlPropertyTable extends Composite {
 		}
 	}
 	
-	public void setGraphics(GmmlGraphics g)
+	public void setGraphics(GmmlDataObject g)
 	{
 		this.g = g;
 		tableViewer.setInput(g);
@@ -137,12 +134,12 @@ public class GmmlPropertyTable extends Composite {
 		case COLOR: 	return colorEditor;
 		case TYPE:
 			String[] types = new String[] {""};
-			if (g instanceof GmmlLine)
+			if (g.getObjectType() == ObjectType.LINE)
 			{
 				types = new String[] {"Line", "Arrow", "TBar", "Receptor round",
 						"Ligand round", "Receptor square", "Ligand square"};
 			}
-			else if (g instanceof GmmlShape)
+			else if (g.getObjectType() == ObjectType.SHAPE)
 			{
 				types = new String[] {"Rectangle", "Oval", "Arc"};
 			}
@@ -179,9 +176,9 @@ public class GmmlPropertyTable extends Composite {
 		
 		public Object getValue(Object element, String property) {
 			String key = (String)element;
-			if(g.gdata.propItems.containsKey(key))
+			if(g.propItems.containsKey(key))
 			{
-				Object value = g.gdata.propItems.get(key);
+				Object value = g.propItems.get(key);
 				switch((Integer)typeMappings.get(key))
 				{
 				case DOUBLE:
@@ -193,7 +190,7 @@ public class GmmlPropertyTable extends Composite {
 				case TYPE: 
 					if (key.equals("GeneProduct-Data-Source"))
 						return systemNames.indexOf((String)value);
-					else if (g instanceof GmmlMappInfo || g instanceof GmmlGeneProduct)
+					else if (g.getObjectType() == ObjectType.MAPPINFO || g.getObjectType() == ObjectType.GENEPRODUCT)
 						return (String)value;
 					else
 						return (Integer)value;
@@ -220,7 +217,7 @@ public class GmmlPropertyTable extends Composite {
 				}
 			}
 			
-			g.gdata.propItems.put(key, value);
+			g.propItems.put(key, value);
 			g.updateFromPropItems();
 			tableViewer.refresh();
 		}
@@ -231,7 +228,7 @@ public class GmmlPropertyTable extends Composite {
 		public Object[] getElements(Object inputElement) {
 			if(inputElement != null)
 			{
-				g = (GmmlGraphics)inputElement;
+				g = (GmmlDataObject)inputElement;
 				return g.getAttributes().toArray();
 			}
 			return null;
@@ -257,7 +254,7 @@ public class GmmlPropertyTable extends Composite {
 					{
 						if(key.equals("Name"))
 						{
-							if(g instanceof GmmlGeneProduct)
+							if(g.getObjectType() == ObjectType.GENEPRODUCT)
 							{
 								return "Gene ID";
 							}
@@ -266,9 +263,9 @@ public class GmmlPropertyTable extends Composite {
 					}
 				case 1:
 					//TODO: prettier labels for different value types
-					if(g.gdata.propItems.containsKey(key))
+					if(g.propItems.containsKey(key))
 					{
-						return g.gdata.propItems.get(key).toString();
+						return g.propItems.get(key).toString();
 					}
 			}
 			return null;
@@ -281,4 +278,9 @@ public class GmmlPropertyTable extends Composite {
 		}
 		public void removeListener(ILabelProviderListener listener) { }
 	};
+
+	public void gmmlObjectModified(GmmlEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
 }

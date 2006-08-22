@@ -111,7 +111,7 @@ public class GmmlLabel extends GmmlGraphicsShape
 		createJdomElement(doc);
 	}
 	
-	public GmmlLabel (int x, int y, int width, int height, GmmlDrawing canvas, Document doc)
+	public GmmlLabel (int x, int y, int width, int height, GmmlDrawing canvas)
 	{
 		this(canvas);
 		
@@ -120,8 +120,7 @@ public class GmmlLabel extends GmmlGraphicsShape
 		gdata.setWidth(width);
 		gdata.setHeight(height);
 		
-		setHandleLocation();
-		createJdomElement(doc);
+		setHandleLocation();		
 	}
 	
 	/**
@@ -132,11 +131,10 @@ public class GmmlLabel extends GmmlGraphicsShape
 	public GmmlLabel (Element e, GmmlDrawing canvas) {
 		this(canvas);
 		
-		this.gdata.jdomElement = e;
-		gdata.mapShapeData();
-		gdata.mapColor();
-		gdata.mapLabelData();
-		gdata.mapNotesAndComment();
+		gdata.mapShapeData(e);
+		gdata.mapColor(e);
+		gdata.mapLabelData(e);
+		gdata.mapNotesAndComment(e);
 		setHandleLocation();
 	}
 	
@@ -160,26 +158,11 @@ public class GmmlLabel extends GmmlGraphicsShape
 		gdata.setWidth(nWidth);
 		gdata.setHeight(nHeight);
 		
-		updateToPropItems();
+		gdata.updateToPropItems();
 		
 		setHandleLocation();
 		f.dispose();
 		gc.dispose();
-	}
-	
-	/**
-	 * Updates the JDom representation of this label
-	 */
-	public void updateJdomElement() {
-		if(gdata.jdomElement != null) {
-			gdata.updateNotesAndComment();
-			Element jdomGraphics = gdata.jdomElement.getChild("Graphics");			
-			if(jdomGraphics !=null) {
-				gdata.updateLabelData();
-				gdata.updateColor();
-				gdata.updateShapeData();
-			}
-		}
 	}
 	
 	private Text t;
@@ -229,13 +212,15 @@ public class GmmlLabel extends GmmlGraphicsShape
 		canvas.redrawDirtyRect();
 	}
 	
-	protected void createJdomElement(Document doc) {
-		if(gdata.jdomElement == null) {
-			gdata.jdomElement = new Element("Label");
-			gdata.jdomElement.addContent(new Element("Graphics"));
+	public void createJdomElement(Document doc) {
+		Element e = new Element("Label");
+		e.addContent(new Element("Graphics"));
 			
-			doc.getRootElement().addContent(gdata.jdomElement);
-		}
+		gdata.updateLabelData(e);
+		gdata.updateColor(e);
+		gdata.updateShapeData(e);
+		gdata.updateNotesAndComment(e);
+		doc.getRootElement().addContent(e);		
 	}
 	
 	protected void adjustToZoom(double factor)

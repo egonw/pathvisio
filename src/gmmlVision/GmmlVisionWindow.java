@@ -132,12 +132,11 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 			
 			double usedZoom = drawing.getZoomFactor() * 100;
 			// Set zoom to 100%
-			drawing.setPctZoom(100);
-			drawing.updateJdomElements();
+			drawing.setPctZoom(100);			
 			// Overwrite the existing xml file
 			if (gmmlData.getXmlFile() != null)
 			{
-				gmmlData.writeToXML(gmmlData.getXmlFile());
+				gmmlData.writeToXML(gmmlData.getXmlFile(), true);
 			}
 			else
 			{
@@ -196,10 +195,9 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 				{
 					double usedZoom = drawing.getZoomFactor() * 100;
 					// Set zoom to 100%
-					drawing.setPctZoom(100);
-					drawing.updateJdomElements();
+					drawing.setPctZoom(100);					
 					// Overwrite the existing xml file
-					gmmlData.writeToXML(checkFile);
+					gmmlData.writeToXML(checkFile, true);
 					gmmlData.setXmlFile(checkFile);
 					// Set zoom back
 					drawing.setPctZoom(usedZoom);

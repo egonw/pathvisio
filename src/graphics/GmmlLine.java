@@ -53,15 +53,13 @@ public class GmmlLine extends GmmlGraphicsLine
 	 * @param color - color this line will be painted
 	 * @param canvas - the GmmlDrawing this line will be part of
 	 */
-	public GmmlLine(double startx, double starty, double endx, double endy, RGB color, GmmlDrawing canvas, Document doc)
+	public GmmlLine(double startx, double starty, double endx, double endy, RGB color, GmmlDrawing canvas)
 	{
 		this(canvas, startx, starty, endx, endy);
 		
 		gdata.setColor (color);
 		
 		setHandleLocation();
-		
-		createJdomElement(doc);
 	}
 	
 	/**
@@ -72,28 +70,20 @@ public class GmmlLine extends GmmlGraphicsLine
 	public GmmlLine (Element e, GmmlDrawing canvas) {
 		this(canvas, 0, 0, 0, 0);
 		
-		this.gdata.jdomElement = e;
-
-		gdata.mapLineData();
-		gdata.mapColor();
-		gdata.mapNotesAndComment();
+		gdata.mapLineData(e);
+		gdata.mapColor(e);
+		gdata.mapNotesAndComment(e);
 		
 		setHandleLocation();
 	}
 
-	/**
-	 * Updates the JDom representation of this label
-	 */	
-	public void updateJdomElement() {
-		gdata.updateLineData();
-		if(gdata.jdomElement != null) {
-			gdata.updateNotesAndComment();
-			gdata.updateColor();
-		}
-	}
-	
-	protected void createJdomElement(Document doc) {
-		gdata.createJdomElement(doc, "Line", true);
+	public void createJdomElement(Document doc) {
+		Element e = new Element("Line");
+		e.addContent(new Element("Graphics"));
+		
+		gdata.updateLineData(e);
+		gdata.updateNotesAndComment(e);
+		gdata.updateColor(e);
 	}
 	
 	protected void draw(PaintEvent e, GC buffer)

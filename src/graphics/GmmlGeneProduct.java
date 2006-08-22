@@ -45,8 +45,6 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 
 	// note: not the same as color!
 	RGB fillColor = INITIAL_FILL_COLOR;
-		
-		
 	GmmlGpColor gpColor;
 	
 	/**
@@ -77,7 +75,7 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	 * @param color - the color this geneproduct will be painted
 	 * @param canvas - the GmmlDrawing this geneproduct will be part of
 	 */
-	public GmmlGeneProduct(double x, double y, double width, double height, String geneLabel, String xref, RGB color, GmmlDrawing canvas, Document doc){
+	public GmmlGeneProduct(double x, double y, double width, double height, String geneLabel, String xref, RGB color, GmmlDrawing canvas){
 		this(canvas);
 		
 		gdata.setCenterX(x);
@@ -89,7 +87,6 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		gdata.setColor(color);
 
 		setHandleLocation();
-		createJdomElement(doc);
 	}
 	
 	/**
@@ -100,11 +97,10 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	public GmmlGeneProduct(Element e, GmmlDrawing canvas) {
 		this(canvas);
 		
-		gdata.jdomElement = e;
-		gdata.mapShapeData();
-		gdata.mapColor();
-		gdata.mapNotesAndComment();
-		gdata.mapGeneProductData();
+		gdata.mapShapeData(e);
+		gdata.mapColor(e);
+		gdata.mapNotesAndComment(e);
+		gdata.mapGeneProductData(e);
 		
 		setHandleLocation();
 	}
@@ -115,26 +111,10 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	}
 	
 	/**
-	 * Updates the JDom representation of this geneproduct
-	 */
-	public void updateJdomElement() {
-		if(gdata.jdomElement != null) {
-			gdata.updateGeneProductData();
-			gdata.updateNotesAndComment();
-			gdata.updateColor();
-			gdata.updateShapeData();
-		}
-	}
-	
-	/**
 	 * Fetches the gene identifier from the Jdom representation
 	 */
 	public String getId() {
-		if(gdata.jdomElement != null) {
-			return gdata.jdomElement.getAttributeValue("Name");
-			} else {
-			return "";
-		}
+		return gdata.getGeneID();
 	}
 	
 	public void setFontSize(double size) {
@@ -195,7 +175,8 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		markDirty();
 		gdata.setGeneID (t.getText());
 		markDirty();
-		canvas.updatePropertyTable(this);
+		//TODO: implement listener. 
+		//canvas.updatePropertyTable(this);
 		Composite c = t.getParent();
 		c.setVisible(false);
 		c.dispose();
@@ -203,13 +184,15 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		canvas.redrawDirtyRect();
 	}
 	
-	protected void createJdomElement(Document doc) {
-		if(gdata.jdomElement == null) {
-			gdata.jdomElement = new Element("GeneProduct");
-			gdata.jdomElement.addContent(new Element("Graphics"));
-			
-			doc.getRootElement().addContent(gdata.jdomElement);
-		}
+	public void createJdomElement(Document doc) 
+	{		
+		Element e = new Element("GeneProduct");
+		e.addContent(new Element("Graphics"));			
+		gdata.updateGeneProductData(e);
+		gdata.updateNotesAndComment(e);
+		gdata.updateColor(e);
+		gdata.updateShapeData(e);
+		doc.getRootElement().addContent(e);
 	}
 		
 	public void adjustToZoom(double factor)
@@ -240,15 +223,15 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		buffer.setLineWidth (1);		
 		
 		buffer.drawRectangle (
-			(int)(gdata.getStartX()),
-			(int)(gdata.getStartY()),
+			(int)(gdata.getLeft()),
+			(int)(gdata.getTop()),
 			(int)gdata.getWidth(),
 			(int)gdata.getHeight()
 		);
 		
 		buffer.setClipping (
-				(int)(gdata.getStartX()) + 1,
-				(int)(gdata.getStartY()) + 1,
+				(int)(gdata.getLeft()) + 1,
+				(int)(gdata.getTop()) + 1,
 				(int)gdata.getWidth() - 1,
 				(int)gdata.getHeight() - 1
 			);

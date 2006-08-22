@@ -5,9 +5,11 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.eclipse.swt.graphics.RGB;
+import org.jdom.Document;
 import org.jdom.Element;
 
 import preferences.GmmlPreferences;
+import data.*;
 
 
 /**
@@ -19,7 +21,7 @@ public abstract class GmmlGraphics extends GmmlDrawingObject
 	public static RGB selectColor = GmmlPreferences.getColorProperty("colors.selectColor");
 	public static RGB highlightColor = GmmlPreferences.getColorProperty("colors.highlightColor");
 	
-	public GmmlGraphicsData gdata = new GmmlGraphicsData();
+	protected GmmlDataObject gdata = new GmmlDataObject();
 	
 	public GmmlGraphics(GmmlDrawing canvas) {
 		super(canvas);
@@ -43,11 +45,6 @@ public abstract class GmmlGraphics extends GmmlDrawingObject
 		}
 	}
 	
-	public void updateToPropItems()
-	{
-		gdata.updateToPropItems();
-	}
-	
 	public void updateFromPropItems()
 	{
 		markDirty();	
@@ -57,12 +54,7 @@ public abstract class GmmlGraphics extends GmmlDrawingObject
 		canvas.redrawDirtyRect();
 	}
 	
-	//Methods dealing with the GMML representation
-	public Element getJdomElement() { 
-		return gdata.jdomElement; 
-	}
-	
-	public void updateJdomElement() {}
+	abstract public void createJdomElement(Document doc);
 	
 	public List getAttributes() { return gdata.getAttributes() ;}
 }

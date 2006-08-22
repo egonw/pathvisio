@@ -56,7 +56,7 @@ public class GmmlShape extends GmmlGraphicsShape
 	 * @param color - the color this geneproduct will be painted
 	 * @param canvas - the GmmlDrawing this geneproduct will be part of
 	 */
-	public GmmlShape(double x, double y, double width, double height, int type, RGB color, double rotation, GmmlDrawing canvas, Document doc)
+	public GmmlShape(double x, double y, double width, double height, int type, RGB color, double rotation, GmmlDrawing canvas)
 	{
 		this(canvas);
 		
@@ -69,7 +69,6 @@ public class GmmlShape extends GmmlGraphicsShape
 		gdata.setRotation (rotation);
 
 		setHandleLocation();
-		createJdomElement(doc);
 	}
 	
 	/**
@@ -80,34 +79,24 @@ public class GmmlShape extends GmmlGraphicsShape
 	public GmmlShape(Element e, GmmlDrawing canvas) {
 		this(canvas);
 		
-		gdata.jdomElement = e;
-		gdata.mapShapeData();
-		gdata.mapColor();
-		gdata.mapNotesAndComment();
-		
+		gdata.mapShapeData(e);
+		gdata.mapColor(e);
+		gdata.mapNotesAndComment(e);
+		gdata.mapShapeType(e);
 		setHandleLocation();
 	}
 			
-	/**
-	 * Updates the JDom representation of the GMML file. 
-	 */
-	public void updateJdomElement() {
-		if(gdata.jdomElement != null) {
-			gdata.updateColor();
-			gdata.updateRotation();
-			gdata.updateShapeData();
-			gdata.updateNotesAndComment();
-		}
-	}
-
-	protected void createJdomElement(Document doc) {
-		if(gdata.jdomElement == null) {
-			gdata.jdomElement = new Element("Shape");
-			gdata.jdomElement.setAttribute("Type", ShapeType.getMapping(gdata.getShapeType()));
-			gdata.jdomElement.addContent(new Element("Graphics"));
+	public void createJdomElement(Document doc) {
+		Element e = new Element ("Shape");		
+		e.addContent(new Element("Graphics"));
 			
-			doc.getRootElement().addContent(gdata.jdomElement);
-		}
+		doc.getRootElement().addContent(e);
+		
+		gdata.updateColor(e);
+		gdata.updateRotation(e);
+		gdata.updateShapeData(e);
+		gdata.updateShapeType(e);
+		gdata.updateNotesAndComment(e);
 	}
 	
 	protected void adjustToZoom(double factor)

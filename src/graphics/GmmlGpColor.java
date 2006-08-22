@@ -214,12 +214,14 @@ public class GmmlGpColor {
 			
 		} else {			
 			buffer.setFont (f);
-			Point textSize = buffer.textExtent (parent.gdata.getGeneID());
+			String label = parent.gdata.getGeneID();
+			Point textSize = buffer.textExtent (label);
 			c = SwtUtils.changeColor(c, parent.gdata.getColor(), e.display);
 			buffer.setForeground(c);
-			buffer.drawString (parent.gdata.getGeneID(), 
-				(int) parent.getCenterX() - (textSize.x / 2) , 
-				(int) parent.getCenterY() - (textSize.y / 2), true);
+			int x = (int) parent.getCenterX() - (textSize.x / 2);
+			int y = (int) parent.getCenterY() - (textSize.y / 2);
+			RGB rgb = c.getRGB();
+			buffer.drawString (label, x , y, true);
 		}
 		
 		c.dispose();

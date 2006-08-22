@@ -2,31 +2,19 @@ package data;
 
 import gmmlVision.GmmlVision;
 import gmmlVision.GmmlVisionWindow;
-import graphics.GmmlDrawing;
-import graphics.GmmlMappInfo;
+import graphics.*;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Constructor;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.ValidatorHandler;
+import javax.xml.validation.*;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.JDOMParseException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.SAXOutputter;
-import org.jdom.output.XMLOutputter;
+import org.jdom.*;
+import org.jdom.input.*;
+import org.jdom.output.*;
 import org.xml.sax.SAXException;
 
 
@@ -46,6 +34,8 @@ public class GmmlData
 	 */
 	final private static File xsdFile = new File("GMML_compat.xsd");
 	
+	private ArrayList<GmmlGraphicsData> dataObjects;
+	
 	private File xmlFile;
 	/**
 	 * Gets the xml file containing the Gmml pathway currently displayed
@@ -56,29 +46,16 @@ public class GmmlData
 	
 	private GmmlDrawing drawing;
 
-	private Document doc;
-	/**
-	 * JDOM representation of the gmml pathway
-	 */
-	public Document getDocument() { return doc; }
-		
 	/**
 	 * Contructor for this class, creates a new gmml document
 	 * @param drawing {@link GmmlDrawing} that displays the visual representation of the gmml pathway
 	 */
 	public GmmlData(GmmlDrawing drawing) 
 	{
-		doc = new Document();
-		//Set the root element (pathway) and its graphics
-		Element root = new Element("Pathway");
-		Element graphics = new Element("Graphics");
-		root.addContent(graphics);
-		root.addContent(new Element("InfoBox"));
-		doc.setRootElement(root);
-		
 		this.drawing = drawing;
 		GmmlVisionWindow window = GmmlVision.getWindow();
-		GmmlMappInfo mpi = new GmmlMappInfo(drawing, doc.getRootElement());		
+		
+		GmmlMappInfo mpi = new GmmlMappInfo(drawing);		
 		mpi.setBoardSize(window.sc.getSize());
 		mpi.setWindowSize(window.getShell().getSize());
 		mpi.setName("New Pathway");
@@ -99,12 +76,7 @@ public class GmmlData
 		// try to read the file; if an error occurs, catch the exception and print feedback
 
 		xmlFile = new File(file);
-		readFromXml(xmlFile);
-		// build JDOM tree
-		// Validate the JDOM document
-		validateDocument(doc);
-		// Copy the pathway information to a GmmlDrawing
-		toGmmlGraphics();
+		readFromXml(xmlFile);		
 	}
 	
 	/**
@@ -147,7 +119,7 @@ public class GmmlData
 	/**
 	 * Maps the contents of the JDOM tree to a GmmlDrawing
 	 */
-	public void toGmmlGraphics() {
+	public void toGmmlGraphics(Document doc) {
 		// Get the pathway element
 		Element root = doc.getRootElement();
 		drawing.setMappInfo(new GmmlMappInfo(drawing, root));
@@ -198,11 +170,21 @@ public class GmmlData
 	 * Writes the JDOM document to the file specified
 	 * @param file	the file to which the JDOM document should be saved
 	 */
-	public void writeToXML(File file) {
+	public void writeToXML(File file, boolean validate) {
 		try 
 		{
+			Document doc = new Document();
+			//Set the root element (pathway) and its graphics
+			Element root = new Element("Pathway");
+			Element graphics = new Element("Graphics");
+			root.addContent(graphics);
+			root.addContent(new Element("InfoBox"));
+			doc.setRootElement(root);
+			
+			//TODO... magic happens here
+			
 			//Validate the JDOM document
-			validateDocument(doc);
+			if (validate) validateDocument(doc);
 			//Get the XML code
 			XMLOutputter xmlcode = new XMLOutputter(Format.getPrettyFormat());
 			//Open a filewriter
@@ -225,7 +207,11 @@ public class GmmlData
 		try
 		{
 			// build JDOM tree
-			doc = builder.build(file);
+			Document doc = builder.build(file);
+
+			// Copy the pathway information to a GmmlDrawing
+			toGmmlGraphics(doc);
+
 		}
 		catch(JDOMParseException pe) 
 		{
@@ -243,6 +229,7 @@ public class GmmlData
 		}
 	}
 	
+	/*
 	public void readFromMapp (File file) throws ConverterException
 	{
         String inputString = file.getAbsolutePath();
@@ -264,6 +251,7 @@ public class GmmlData
 		
 		MappFile.exportMapp (file.getAbsolutePath(), mappInfo, mappObjects);		
 	}
+	*/
 	
 	public final static String[] systemCodes = new String[] 	{ 
 		"D", "F", "G", "I", "L", "M",

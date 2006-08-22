@@ -43,7 +43,7 @@ public class GmmlBrace extends GmmlGraphicsShape
 	 * @param color - the color this brace will be painted
 	 * @param canvas - the GmmlDrawing this brace will be part of
 	 */
-	public GmmlBrace(double centerX, double centerY, double width, double ppo, int orientation, RGB color, GmmlDrawing canvas, Document doc)
+	public GmmlBrace(double centerX, double centerY, double width, double ppo, int orientation, RGB color, GmmlDrawing canvas)
 	{
 		this(canvas);
 		
@@ -55,7 +55,6 @@ public class GmmlBrace extends GmmlGraphicsShape
 		gdata.setColor(color);
 
 		setHandleLocation();
-		createJdomElement(doc);
 	}
 
 	/**
@@ -66,32 +65,20 @@ public class GmmlBrace extends GmmlGraphicsShape
 	public GmmlBrace(Element e, GmmlDrawing canvas) {
 		this(canvas);
 		
-		gdata.jdomElement = e;
-		
-		gdata.mapNotesAndComment();
-		gdata.mapBraceData();
-		gdata.mapColor();		
+		gdata.mapNotesAndComment(e);
+		gdata.mapBraceData(e);
+		gdata.mapColor(e);		
 		setHandleLocation();
 	}
 	
-	/**
-	 * Updates the JDom representation of this arc
-	 */
-	public void updateJdomElement() {
-		if(gdata.jdomElement != null) {
-			gdata.updateNotesAndComment();
-			gdata.updateColor();
-			gdata.updateBraceData();
-		}
-	}
-	
-	protected void createJdomElement(Document doc) {
-		if(gdata.jdomElement == null) {
-			gdata.jdomElement = new Element("Brace");
-			gdata.jdomElement.addContent(new Element("Graphics"));
+	public void createJdomElement(Document doc) {
+		Element e = new Element("Brace");
+		e.addContent(new Element("Graphics"));
 			
-			doc.getRootElement().addContent(gdata.jdomElement);
-		}
+		doc.getRootElement().addContent(e);
+		gdata.updateNotesAndComment(e);
+		gdata.updateColor(e);
+		gdata.updateBraceData(e);
 	}
 	
 	/*
