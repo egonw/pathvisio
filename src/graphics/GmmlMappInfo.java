@@ -149,12 +149,6 @@ public class GmmlMappInfo extends GmmlGraphics {
 		fNormal.dispose();
 	}
 
-	@Override
-	public void createJdomElement(Document doc) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public int compareTo(Object arg0) {
 		// TODO Auto-generated method stub
 		return 0;

@@ -67,16 +67,6 @@ public class GmmlLine extends GmmlGraphicsLine
 		gdata = _gdata;		
 		setHandleLocation();
 	}
-
-	
-	public void createJdomElement(Document doc) {
-		Element e = new Element("Line");
-		e.addContent(new Element("Graphics"));
-		
-		gdata.updateLineData(e);
-		gdata.updateNotesAndComment(e);
-		gdata.updateColor(e);
-	}
 	
 	protected void draw(PaintEvent e, GC buffer)
 	{

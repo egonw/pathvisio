@@ -173,17 +173,6 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		
 		canvas.redrawDirtyRect();
 	}
-	
-	public void createJdomElement(Document doc) 
-	{		
-		Element e = new Element("GeneProduct");
-		e.addContent(new Element("Graphics"));			
-		gdata.updateGeneProductData(e);
-		gdata.updateNotesAndComment(e);
-		gdata.updateColor(e);
-		gdata.updateShapeData(e);
-		doc.getRootElement().addContent(e);
-	}
 		
 	public void adjustToZoom(double factor)
 	{

@@ -98,7 +98,7 @@ public class GmmlLabel extends GmmlGraphicsShape
 	 * @param canvas - the GmmlDrawing the label will be part of
 	 */
 	public GmmlLabel (int x, int y, int width, int height, String text, String font, String fontWeight, 
-		String fontStyle, int fontSize, RGB color, GmmlDrawing canvas, Document doc)
+		String fontStyle, int fontSize, RGB color, GmmlDrawing canvas)
 	{
 		this(canvas);
 		
@@ -108,7 +108,6 @@ public class GmmlLabel extends GmmlGraphicsShape
 		gdata.setHeight(height);
 				
 		setHandleLocation();
-		createJdomElement(doc);
 	}
 	
 	public GmmlLabel (int x, int y, int width, int height, GmmlDrawing canvas)
@@ -201,17 +200,6 @@ public class GmmlLabel extends GmmlGraphicsShape
 		c.dispose();
 				
 		canvas.redrawDirtyRect();
-	}
-	
-	public void createJdomElement(Document doc) {
-		Element e = new Element("Label");
-		e.addContent(new Element("Graphics"));
-			
-		gdata.updateLabelData(e);
-		gdata.updateColor(e);
-		gdata.updateShapeData(e);
-		gdata.updateNotesAndComment(e);
-		doc.getRootElement().addContent(e);		
 	}
 	
 	protected void adjustToZoom(double factor)

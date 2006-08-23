@@ -2,6 +2,8 @@ package data;
 
 import java.math.*;
 
+import org.eclipse.swt.graphics.RGB;
+
 public class ConvertType
 {
     public static int parseIntSafe (String s, int def)
@@ -52,6 +54,20 @@ public class ConvertType
         return hexstring;
     }
     
+    public static RGB fromMappColor(String s)
+    {
+    	
+    	int i = Integer.parseInt(s);
+    	
+    	RGB result = new RGB(
+    			(i & 0xFF0000) >> 16,
+    			(i & 0xFF00) >> 8,
+    			i & 0xFF
+    	);
+    	
+    	return result;
+    }
+    
     public static String toMappColor(String s)
     {
     
@@ -64,5 +80,11 @@ public class ConvertType
 			int i = Integer.parseInt(s, 16);
 			return Integer.toString(i);
     	}
-    }    
+    }
+    
+    public static String toMappColor(RGB rgb)
+    {
+    	int c = rgb.red << 16 + rgb.green << 8 + rgb.blue;
+    	return "" + c;
+    }
 }

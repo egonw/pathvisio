@@ -55,7 +55,5 @@ public abstract class GmmlGraphics extends GmmlDrawingObject
 		canvas.redrawDirtyRect();
 	}
 	
-	abstract public void createJdomElement(Document doc);
-	
 	public List getAttributes() { return gdata.getAttributes() ;}
 }

@@ -29,11 +29,6 @@ import data.*;
 public class GmmlShape extends GmmlGraphicsShape
 {
 	private static final long serialVersionUID = 1L;
-
-	public final List attributes = Arrays.asList(new String[] {
-			"CenterX", "CenterY", "Width", "Height", 
-			"Type","Color","Rotation", "Notes"
-	});
 			
 	/**
 	 * Constructor for this class
@@ -75,19 +70,6 @@ public class GmmlShape extends GmmlGraphicsShape
 		this(canvas);
 		gdata = _gdata;		
 		setHandleLocation();
-	}
-
-	public void createJdomElement(Document doc) {
-		Element e = new Element ("Shape");		
-		e.addContent(new Element("Graphics"));
-			
-		doc.getRootElement().addContent(e);
-		
-		gdata.updateColor(e);
-		gdata.updateRotation(e);
-		gdata.updateShapeData(e);
-		gdata.updateShapeType(e);
-		gdata.updateNotesAndComment(e);
 	}
 	
 	protected void adjustToZoom(double factor)

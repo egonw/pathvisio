@@ -31,7 +31,7 @@ public class GmmlData
 	/**
 	 * file containing the gmml schema definition
 	 */
-	final private static File xsdFile = new File("GMML_compat.xsd");
+	final private static File xsdFile = new File("E:\\prg\\gmml-visio-mvctryout\\GMML_compat.xsd");
 	
 	public List<GmmlDataObject> dataObjects = new ArrayList<GmmlDataObject>();
 	
@@ -49,15 +49,18 @@ public class GmmlData
 	 */
 	public GmmlData() 
 	{
+		/*
 		GmmlVisionWindow window = GmmlVision.getWindow();
 		
-		GmmlDataObject mapInfo = new GmmlDataObject();
-		mapInfo.setObjectType(ObjectType.MAPPINFO);
-		mapInfo.setBoardWidth(window.sc.getSize().x);
-		mapInfo.setBoardHeight(window.sc.getSize().y);
-		mapInfo.setWindowWidth(window.getShell().getSize().x);
-		mapInfo.setWindowHeight(window.getShell().getSize().y);
-		mapInfo.setMapInfoName("New Pathway");
+		
+			GmmlDataObject mapInfo = new GmmlDataObject();
+			mapInfo.setObjectType(ObjectType.MAPPINFO);
+			mapInfo.setBoardWidth(window.sc.getSize().x);
+			mapInfo.setBoardHeight(window.sc.getSize().y);
+			mapInfo.setWindowWidth(window.getShell().getSize().x);
+			mapInfo.setWindowHeight(window.getShell().getSize().y);
+			mapInfo.setMapInfoName("New Pathway");
+		*/
 	}
 		
 	/**
@@ -73,7 +76,7 @@ public class GmmlData
 		// try to read the file; if an error occurs, catch the exception and print feedback
 
 		xmlFile = new File(file);
-		readFromXml(xmlFile);		
+		readFromXml(xmlFile, true);		
 	}
 	
 	/**
@@ -132,10 +135,13 @@ public class GmmlData
 			Element root = new Element("Pathway");
 			Element graphics = new Element("Graphics");
 			root.addContent(graphics);
-			root.addContent(new Element("InfoBox"));
 			doc.setRootElement(root);
 			
 			//TODO... magic happens here
+			for (GmmlDataObject o : dataObjects)
+			{
+				o.createJdomElement(doc);
+			}
 			
 			//Validate the JDOM document
 			if (validate) validateDocument(doc);
@@ -152,7 +158,7 @@ public class GmmlData
 		}
 	}
 	
-	public void readFromXml(File file)
+	public void readFromXml(File file, boolean validate)
 	{
 		// Start XML processing
 		GmmlVision.log.info("Start reading the XML file: " + file);
@@ -163,6 +169,8 @@ public class GmmlData
 			// build JDOM tree
 			Document doc = builder.build(file);
 
+			if (validate) validateDocument(doc);
+			
 			// Copy the pathway information to a GmmlDrawing
 			Element root = doc.getRootElement();
 			

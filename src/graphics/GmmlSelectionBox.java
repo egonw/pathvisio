@@ -274,10 +274,5 @@ class GmmlSelectionBox extends GmmlGraphicsShape
 	{
 		draw(e, e.gc);
 	}
-
-	@Override
-	public void createJdomElement(Document doc) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 }

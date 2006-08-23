@@ -71,7 +71,7 @@ public class GmmlDataObject extends GmmlGraphicsData
 		lineType = (type.equals("Line")) ? LineType.LINE : LineType.ARROW;
 	}
 	
-	public void updateLineData(Element e)
+	private void updateLineData(Element e)
 	{
 		if(e != null) {
 			e.setAttribute("Type", lineType == LineType.LINE ? "Line" : "Arrow");
@@ -94,7 +94,7 @@ public class GmmlDataObject extends GmmlGraphicsData
     	color = ColorConverter.gmmlString2Color(graphics.getAttributeValue("Color"));	
 	}
 	
-	public void updateColor(Element e)
+	private void updateColor(Element e)
 	{
 		if(e != null) 
 		{
@@ -115,7 +115,7 @@ public class GmmlDataObject extends GmmlGraphicsData
     	if (comment == null) comment = "";
 	}
 	
-	public void updateNotesAndComment(Element e)
+	private void updateNotesAndComment(Element e)
 	{
 		if(e != null) 
 		{
@@ -134,7 +134,7 @@ public class GmmlDataObject extends GmmlGraphicsData
 		dataSource = e.getAttributeValue("GeneProduct-Data-Source");
 	}
 
-	public void updateGeneProductData(Element e)
+	private void updateGeneProductData(Element e)
 	{
 		if(e != null) {
 			e.setAttribute("GeneID", geneID);
@@ -256,7 +256,7 @@ public class GmmlDataObject extends GmmlGraphicsData
 		setGmmlHeight(Double.parseDouble(graphics.getAttributeValue("Height")) / GmmlData.GMMLZOOM);
 	}
 	
-	public void updateShapeData(Element e)
+	private void updateShapeData(Element e)
 	{
 		if(e != null) 
 		{
@@ -275,7 +275,7 @@ public class GmmlDataObject extends GmmlGraphicsData
 		e.setAttribute("Type", ShapeType.getMapping(shapeType));		
 	}
 	
-	public void updateShapeType(Element e)
+	private void updateShapeType(Element e)
 	{
 		if(e != null) 
 		{
@@ -294,7 +294,7 @@ public class GmmlDataObject extends GmmlGraphicsData
 			setOrientation(orientation);
 	}
 	
-	public void updateBraceData(Element e)
+	private void updateBraceData(Element e)
 	{
 		if(e != null) 
 		{
@@ -315,7 +315,7 @@ public class GmmlDataObject extends GmmlGraphicsData
 		rotation = Double.parseDouble(graphics.getAttributeValue("Rotation")); 
 	}
 
-	public void updateRotation(Element e)
+	private void updateRotation(Element e)
 	{
 		if(e != null) 
 		{
@@ -345,7 +345,7 @@ public class GmmlDataObject extends GmmlGraphicsData
     	fStrikethru = (fontStrikethru != null && fontStrikethru.equals("Strikethru"));    	
 	}
 	
-	public void updateLabelData(Element e)
+	private void updateLabelData(Element e)
 	{
 		if(e != null) 
 		{
@@ -383,7 +383,7 @@ public class GmmlDataObject extends GmmlGraphicsData
 		mapInfoTop = 0;//Integer.parseInt(g.getAttributeValue("MapInfoTop")) / GmmlData.GMMLZOOM;		
 	}
 	
-	public void updateMappInfoData(Element e)
+	private void updateMappInfoData(Element e)
 	{
 		e.setAttribute("Name", mapInfoName);
 		e.setAttribute("Organism", organism);
@@ -574,4 +574,57 @@ public class GmmlDataObject extends GmmlGraphicsData
 	//Methods dealing with property table
 	public Hashtable<String, Object> propItems;
 
+	public void createJdomElement(Document doc) 
+	{		
+		Element e = null;
+		
+		switch (objectType)
+		{
+			case ObjectType.GENEPRODUCT:
+				e = new Element("GeneProduct");
+				e.addContent(new Element("Graphics"));			
+				updateGeneProductData(e);
+				updateNotesAndComment(e);
+				updateColor(e);
+				updateShapeData(e);
+				break;
+			case ObjectType.SHAPE:
+				e = new Element ("Shape");		
+				e.addContent(new Element("Graphics"));
+					
+				updateColor(e);
+				updateRotation(e);
+				updateShapeData(e);
+				updateShapeType(e);
+				updateNotesAndComment(e);
+				break;
+			case ObjectType.BRACE:
+				e = new Element("Brace");
+				e.addContent(new Element("Graphics"));
+					
+				updateNotesAndComment(e);
+				updateColor(e);
+				updateBraceData(e);
+				break;
+			case ObjectType.LINE:
+				e = new Element("Line");
+				e.addContent(new Element("Graphics"));
+				
+				updateLineData(e);
+				updateNotesAndComment(e);
+				updateColor(e);
+				break;
+			case ObjectType.LABEL:
+				e = new Element("Label");
+				e.addContent(new Element("Graphics"));					
+				updateLabelData(e);
+				updateColor(e);
+				updateShapeData(e);
+				updateNotesAndComment(e);			
+				break;
+		}
+		if (e != null)
+			doc.getRootElement().addContent(e);
+		// TODO: throw exception!
+	}
 }

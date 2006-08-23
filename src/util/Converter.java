@@ -137,16 +137,14 @@ public class Converter {
 			{
 				if (fromMappToGmml)
 				{
-					GmmlData gmmlData = new GmmlData(log);
+					GmmlData gmmlData = new GmmlData();
 					gmmlData.readFromMapp(inputFile);
-					gmmlData.writeToXML(outputFile);
-					valid = gmmlData.validateDocument();
+					gmmlData.writeToXML(outputFile, true);					
 				}
 				else
 				{
-					GmmlData gmmlData = new GmmlData(log);
-					gmmlData.readFromXml(inputFile);
-					valid = gmmlData.validateDocument();
+					GmmlData gmmlData = new GmmlData();
+					gmmlData.readFromXml(inputFile, true);					
 					gmmlData.writeToMapp(outputFile);
 				}
 			}

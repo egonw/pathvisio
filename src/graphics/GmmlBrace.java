@@ -68,16 +68,6 @@ public class GmmlBrace extends GmmlGraphicsShape
 		setHandleLocation();
 	}
 	
-	public void createJdomElement(Document doc) {
-		Element e = new Element("Brace");
-		e.addContent(new Element("Graphics"));
-			
-		doc.getRootElement().addContent(e);
-		gdata.updateNotesAndComment(e);
-		gdata.updateColor(e);
-		gdata.updateBraceData(e);
-	}
-	
 	/*
 	 *  (non-Javadoc)
 	 * @see GmmlGraphics#adjustToZoom()
