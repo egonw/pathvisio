@@ -391,10 +391,14 @@
 
 						<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
 							<xsd:complexType>
-								<xsd:attribute name="StartX" type="xsd:float"/>
-								<xsd:attribute name="StartY" type="xsd:float"/>
-								<xsd:attribute name="EndX" type="xsd:float"/>
-								<xsd:attribute name="EndY" type="xsd:float"/>
+								<xsd:sequence>
+									<xsd:element name="Point" minOccurs="2" maxOccurs="unbounded">
+										<xsd:complexType>
+											<xsd:attribute name="x" type="xsd:float"/>
+											<xsd:attribute name="y" type="xsd:float"/>
+										</xsd:complexType>
+									</xsd:element>
+								</xsd:sequence>
 								<xsd:attribute name="Color" type="ColorType"
 									default="Black"/>
 							</xsd:complexType>
