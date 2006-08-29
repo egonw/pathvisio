@@ -9,4 +9,6 @@ public class LineType {
 	public static final int RECEPTOR_SQUARE = 5;
 	public static final int LIGAND_ROUND = 6;
 	public static final int RECEPTOR_ROUND = 7;	
+	
+	
 }

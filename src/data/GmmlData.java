@@ -129,24 +129,20 @@ public class GmmlData
 	 */
 	public void writeToXML(File file, boolean validate) {
 		try 
-		{
-			Document doc = new Document();
-			//Set the root element (pathway) and its graphics
-			Element root = new Element("Pathway");
-			Element graphics = new Element("Graphics");
-			root.addContent(graphics);
-			doc.setRootElement(root);
+		{	
 			
-			//TODO... magic happens here
-			for (GmmlDataObject o : dataObjects)
-			{
-				o.createJdomElement(doc);
-			}
+			
+			Document doc = GmmlFormat.createJdom(this);
 			
 			//Validate the JDOM document
 			if (validate) validateDocument(doc);
-			//Get the XML code
+			//			Get the XML code
 			XMLOutputter xmlcode = new XMLOutputter(Format.getPrettyFormat());
+			Format f = xmlcode.getFormat();
+			f.setEncoding("ISO-8859-1");
+			f.setTextMode(Format.TextMode.PRESERVE);
+			xmlcode.setFormat(f);
+			
 			//Open a filewriter
 			FileWriter writer = new FileWriter(file);
 			//Send XML code to the filewriter
@@ -202,23 +198,23 @@ public class GmmlData
 	{
         String inputString = file.getAbsolutePath();
 
-        String[][] mappObjects = MappFile.importMAPPObjects(inputString);
-        String[][] mappInfo = MappFile.importMAPPInfo(inputString);
+        String[][] mappObjects = MappFormat.importMAPPObjects(inputString);
+        String[][] mappInfo = MappFormat.importMAPPInfo(inputString);
 
         // Copy the info table to the new gmml pathway
         
         // Copy the objects table to the new gmml pahtway
-    	MappToGmml.copyMappInfo(mappInfo, this);
-        MappToGmml.copyMappObjects(mappObjects, this);        	
+    	MappFormat.copyMappInfo(mappInfo, this);
+        MappFormat.copyMappObjects(mappObjects, this);        	
 	}
 	
 	
 	public void writeToMapp (File file) throws ConverterException
 	{
-		String[][] mappInfo = MappToGmml.uncopyMappInfo (this);
-		List mappObjects = MappToGmml.uncopyMappObjects (this);
+		String[][] mappInfo = MappFormat.uncopyMappInfo (this);
+		List mappObjects = MappFormat.uncopyMappObjects (this);
 		
-		MappFile.exportMapp (file.getAbsolutePath(), mappInfo, mappObjects);		
+		MappFormat.exportMapp (file.getAbsolutePath(), mappInfo, mappObjects);		
 	}
 	
 	

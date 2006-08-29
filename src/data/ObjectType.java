@@ -16,6 +16,7 @@ public class ObjectType {
 	 public static final int MAPPINFO = 9;
 	 
 	// Some mappings to Gmml TAGS
+	 // TODO: is this actually used?
 	private static final List<String> tagMappings = Arrays.asList(new String[] {
 		"Brace", "Shape", "ComplexShape", "FixedShape", "GeneProduct", "Label", "Line", "Legend", "InfoBox", 
 		"Pathway"

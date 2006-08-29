@@ -54,8 +54,8 @@ public class Converter {
 						//debug, trace, info, warn, error, fatal
 		log.setLogLevel (false, false, true, true, true, true);
 		
-		MappToGmml.log = log;
-		MappFile.log = log;
+		MappFormat.log = log;
+		GmmlFormat.log = log;
 		
 		boolean error = false;
 		if (args.length == 0)
@@ -131,7 +131,7 @@ public class Converter {
 			log.info("Going from " + 
 					(fromMappToGmml ? "mapp to gmml " : "gmml to mapp"));
 
-			boolean valid = false;
+			boolean valid = true;
 			
 			try
 			{

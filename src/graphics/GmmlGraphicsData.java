@@ -48,6 +48,10 @@ public abstract class GmmlGraphicsData
 	public RGB getColor() { return color; }
 	public void setColor(RGB value) { color = value; }
 	
+	protected boolean fTransparent;
+	public boolean isTransparent() { return fTransparent; }
+	public void setTransparent(boolean v) { fTransparent = v; }
+
 	// general
 	protected String comment = "";
 	public String getComment() { return comment; }
@@ -221,4 +225,5 @@ public abstract class GmmlGraphicsData
 	protected int mapInfoTop;
 	public int getMapInfoTop() { return mapInfoTop; }
 	public void setMapInfoTop(int v) { mapInfoTop = v; }
+		
 }

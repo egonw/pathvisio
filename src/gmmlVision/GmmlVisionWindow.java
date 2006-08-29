@@ -107,7 +107,9 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 			fd.setFilterNames(new String[] {"Gmml file", "All files"});
 	        String fnMapp = fd.open();
 	        // Only open pathway if user selected a file
-	        if(fnMapp != null) { GmmlVision.openPathway(fnMapp); }
+	        if(fnMapp != null) { 
+	        	GmmlVision.openPathway(fnMapp); 
+	        }
 		}
 	}
 	private OpenAction openAction = new OpenAction (this);

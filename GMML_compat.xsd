@@ -55,13 +55,8 @@
 					<xsd:enumeration value="Teal"/>
 					<xsd:enumeration value="White"/>
 					<xsd:enumeration value="Yellow"/>
+					<xsd:enumeration value="Transparent"/>
 				</xsd:restriction>
-			</xsd:simpleType>
-			<!-- TODO: change -1 to string "transparent" -->
-			<!-- include integer consideration for at least shape type Oval, with
-			color '-1' -->
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:integer"/>
 			</xsd:simpleType>
 		</xsd:union>
 	</xsd:simpleType>
@@ -273,14 +268,11 @@
 
 						<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
 							<xsd:complexType>
-								<xsd:attribute name="CenterX" type="xsd:float"
-									use="required"/>
-								<xsd:attribute name="CenterY" type="xsd:float"
-									use="required"/>
-								<xsd:attribute name="Width" default="600"
-									type="Dimension"/>
-								<xsd:attribute name="Height" default="300"
-									type="Dimension"/>
+								<xsd:attribute name="CenterX" type="xsd:float" use="required"/>
+								<xsd:attribute name="CenterY" type="xsd:float" use="required"/>
+								<xsd:attribute name="Width" default="600" type="Dimension"/>
+								<xsd:attribute name="Height" default="300" type="Dimension"/>
+								<xsd:attribute name="Color" type="ColorType"/>
 							</xsd:complexType>
 						</xsd:element>
 
@@ -392,7 +384,7 @@
 						<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
 							<xsd:complexType>
 								<xsd:sequence>
-									<xsd:element name="Point" minOccurs="2" maxOccurs="unbounded">
+									<xsd:element name="Point" minOccurs="2" maxOccurs="2">
 										<xsd:complexType>
 											<xsd:attribute name="x" type="xsd:float"/>
 											<xsd:attribute name="y" type="xsd:float"/>
@@ -416,7 +408,7 @@
 								<xsd:enumeration value="ReceptorSquare"/>
 								<xsd:enumeration value="LigandRound"/>
 								<xsd:enumeration value="LigandSquare"/>
-								<xsd:enumeration value="Tbar"/>
+								<xsd:enumeration value="TBar"/>
 							</xsd:restriction>
 						</xsd:simpleType>
 					</xsd:attribute>
@@ -506,10 +498,10 @@
 										</xsd:restriction>
 									</xsd:simpleType>
 								</xsd:attribute>
-								<xsd:attribute name="FontWeight" default="Regular">
+								<xsd:attribute name="FontWeight" default="Normal">
 									<xsd:simpleType>
 										<xsd:restriction base="xsd:string">
-											<xsd:enumeration value="Regular"/>
+											<xsd:enumeration value="Normal"/>
 											<xsd:enumeration value="Bold"/>
 										</xsd:restriction>
 									</xsd:simpleType>
@@ -549,7 +541,17 @@
 							maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation xml:lang="en">Text from Notes is not
-									displayed on GenMAPP map or backpage</xsd:documentation>
+									displayed on GenMAPP map or backpage.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<xsd:element name="Comment" type="xsd:string" minOccurs="0"
+							maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation xml:lang="en">GenMAPP label comments
+									appear when label is right clicked They are currently
+									limited in length to 50 characters and are GenMAPP
+									REMARKS.</xsd:documentation>
 							</xsd:annotation>
 						</xsd:element>
 
@@ -597,7 +599,17 @@
 							maxOccurs="1">
 							<xsd:annotation>
 								<xsd:documentation xml:lang="en">Text from Notes is not
-									displayed on GenMAPP map or backpage</xsd:documentation>
+									displayed on GenMAPP map or backpage.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<xsd:element name="Comment" type="xsd:string" minOccurs="0"
+							maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation xml:lang="en">GenMAPP label comments
+									appear when label is right clicked They are currently
+									limited in length to 50 characters and are GenMAPP
+									REMARKS.</xsd:documentation>
 							</xsd:annotation>
 						</xsd:element>
 
@@ -649,13 +661,23 @@
 
 			<xsd:sequence>
 
-				<xsd:element name="Notes" type="xsd:string" minOccurs="0"
-					maxOccurs="1">
-					<xsd:annotation>
-						<xsd:documentation xml:lang="en">Text from Notes is not
-							displayed on GenMAPP map or backpage</xsd:documentation>
-					</xsd:annotation>
-				</xsd:element>
+						<xsd:element name="Notes" type="xsd:string" minOccurs="0"
+							maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation xml:lang="en">Text from Notes is not
+									displayed on GenMAPP map or backpage.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<xsd:element name="Comment" type="xsd:string" minOccurs="0"
+							maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation xml:lang="en">GenMAPP label comments
+									appear when label is right clicked They are currently
+									limited in length to 50 characters and are GenMAPP
+									REMARKS.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
 
 				<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
 					<xsd:complexType>
@@ -683,12 +705,23 @@
 
 			<xsd:sequence>
 
-				<xsd:element name="Notes" type="xsd:string" maxOccurs="1">
-					<xsd:annotation>
-						<xsd:documentation xml:lang="en">Text from Notes is not
-							displayed on GenMAPP map or backpage</xsd:documentation>
-					</xsd:annotation>
-				</xsd:element>
+						<xsd:element name="Notes" type="xsd:string" minOccurs="0"
+							maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation xml:lang="en">Text from Notes is not
+									displayed on GenMAPP map or backpage.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<xsd:element name="Comment" type="xsd:string" minOccurs="0"
+							maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation xml:lang="en">GenMAPP label comments
+									appear when label is right clicked They are currently
+									limited in length to 50 characters and are GenMAPP
+									REMARKS.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
 
 				<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
 					<xsd:complexType>
@@ -724,13 +757,23 @@
 		<xsd:complexType>
 			<xsd:sequence>
 
-				<xsd:element name="Notes" type="xsd:string" minOccurs="0"
-					maxOccurs="1">
-					<xsd:annotation>
-						<xsd:documentation xml:lang="en">Text from Notes is not
-							displayed on GenMAPP map or backpage</xsd:documentation>
-					</xsd:annotation>
-				</xsd:element>
+						<xsd:element name="Notes" type="xsd:string" minOccurs="0"
+							maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation xml:lang="en">Text from Notes is not
+									displayed on GenMAPP map or backpage.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<xsd:element name="Comment" type="xsd:string" minOccurs="0"
+							maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation xml:lang="en">GenMAPP label comments
+									appear when label is right clicked They are currently
+									limited in length to 50 characters and are GenMAPP
+									REMARKS.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
 
 				<xsd:element name="Graphics" minOccurs="1" maxOccurs="1">
 					<xsd:complexType>

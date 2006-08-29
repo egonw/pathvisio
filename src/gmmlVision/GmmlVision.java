@@ -2,6 +2,7 @@ package gmmlVision;
 
 import graphics.GmmlDrawing;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
@@ -124,7 +125,7 @@ public abstract class GmmlVision {
 			_gmmlData = new GmmlData(pwf);
 		} catch(Exception e) {
 			MessageDialog.openError(getWindow().getShell(), 
-					"Unable to open Gmml file", e.getMessage());
+					"Unable to open Gmml file", e.getClass() + e.getMessage());
 			log.error("Unable to open Gmml file", e);
 		}
 		

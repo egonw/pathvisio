@@ -82,9 +82,14 @@ public class ConvertType
     	}
     }
     
-    public static String toMappColor(RGB rgb)
+    public static String toMappColor(RGB rgb, boolean fTransparent)
     {
-    	int c = rgb.red << 16 + rgb.green << 8 + rgb.blue;
-    	return "" + c;
+    	if (fTransparent)
+    		return "-1";
+    	else
+    	{
+	    	int c = ((int)rgb.red << 16) + ((int)rgb.green << 8) + rgb.blue;
+	    	return "" + c;
+    	}
     }
 }

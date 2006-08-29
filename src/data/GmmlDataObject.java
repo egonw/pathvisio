@@ -51,47 +51,64 @@ public class GmmlDataObject extends GmmlGraphicsData
 				mapColor(e);
 				mapNotesAndComment(e);
 				mapShapeType(e);
+				mapRotation(e);
+				break;
+			case ObjectType.LEGEND:
+				mapSimpleCenter(e);
+				break;
+			case ObjectType.INFOBOX:
+				mapSimpleCenter (e);
 				break;
 		}
 	}
 	
+	private static final List<String> gmmlLineTypes = Arrays.asList(new String[] {
+			"Line", "Arrow", "TBar", "Receptor", "LigandSquare", 
+			"ReceptorSquare", "LigandRound", "ReceptorRound"});
+
 	private void mapLineData(Element e)
 	{
     	Element graphics = e.getChild("Graphics");
     	
-    	startx = Double.parseDouble(graphics.getAttributeValue("StartX")) / GmmlData.GMMLZOOM;
-    	starty = Double.parseDouble(graphics.getAttributeValue("StartY")) / GmmlData.GMMLZOOM;
-    	endx = Double.parseDouble(graphics.getAttributeValue("EndX")) / GmmlData.GMMLZOOM;
-    	endy = Double.parseDouble(graphics.getAttributeValue("EndY")) / GmmlData.GMMLZOOM; 
+    	Element p1 = (Element)graphics.getChildren().get(0);
+    	Element p2 = (Element)graphics.getChildren().get(1);
+    	
+    	startx = Double.parseDouble(p1.getAttributeValue("x")) / GmmlData.GMMLZOOM;
+    	starty = Double.parseDouble(p1.getAttributeValue("y")) / GmmlData.GMMLZOOM;
+    	endx = Double.parseDouble(p2.getAttributeValue("x")) / GmmlData.GMMLZOOM;
+    	endy = Double.parseDouble(p2.getAttributeValue("y")) / GmmlData.GMMLZOOM; 
     	
     	String style = e.getAttributeValue("Style");
     	String type = e.getAttributeValue("Type");
     	
 		lineStyle = (style.equals("Solid")) ? LineStyle.SOLID : LineStyle.DASHED;
-		lineType = (type.equals("Line")) ? LineType.LINE : LineType.ARROW;
+		lineType = gmmlLineTypes.indexOf(type);
 	}
 	
 	private void updateLineData(Element e)
 	{
 		if(e != null) {
-			e.setAttribute("Type", lineType == LineType.LINE ? "Line" : "Arrow");
+			e.setAttribute("Type", gmmlLineTypes.get(lineType));
 			e.setAttribute("Style", lineStyle == LineStyle.SOLID ? "Solid" : "Broken");
 			
 			Element jdomGraphics = e.getChild("Graphics");
-			if(jdomGraphics != null) {
-				jdomGraphics.setAttribute("StartX", Double.toString(startx * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("StartY", Double.toString(starty * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("EndX", Double.toString(endx * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("EndY", Double.toString(endy * GmmlData.GMMLZOOM));
-			}
-			
+			Element p1 = new Element("Point");
+			jdomGraphics.addContent(p1);
+			p1.setAttribute("x", Double.toString(startx * GmmlData.GMMLZOOM));
+			p1.setAttribute("y", Double.toString(starty * GmmlData.GMMLZOOM));
+			Element p2 = new Element("Point");
+			jdomGraphics.addContent(p2);
+			p2.setAttribute("x", Double.toString(endx * GmmlData.GMMLZOOM));
+			p2.setAttribute("y", Double.toString(endy * GmmlData.GMMLZOOM));			
 		}
 	}
 	
 	private void mapColor(Element e)
 	{
-    	Element graphics = e.getChild("Graphics");    	
-    	color = ColorConverter.gmmlString2Color(graphics.getAttributeValue("Color"));	
+    	Element graphics = e.getChild("Graphics");
+    	String scol = graphics.getAttributeValue("Color");
+    	color = ColorConverter.gmmlString2Color(scol);
+    	fTransparent = scol.equals("Transparent");
 	}
 	
 	private void updateColor(Element e)
@@ -101,7 +118,10 @@ public class GmmlDataObject extends GmmlGraphicsData
 			Element jdomGraphics = e.getChild("Graphics");
 			if(jdomGraphics != null) 
 			{
-				jdomGraphics.setAttribute("Color", ColorConverter.color2HexBin(color));
+				if (fTransparent)
+					jdomGraphics.setAttribute("Color", "Transparent");
+				else
+					jdomGraphics.setAttribute("Color", ColorConverter.color2HexBin(color));
 			}
 		}
 	}
@@ -111,7 +131,7 @@ public class GmmlDataObject extends GmmlGraphicsData
     	notes = e.getChildText("Notes");
     	if (notes == null) notes = "";
     	
-    	String comment = e.getChildText("Comment");
+    	comment = e.getChildText("Comment");
     	if (comment == null) comment = "";
 	}
 	
@@ -119,8 +139,13 @@ public class GmmlDataObject extends GmmlGraphicsData
 	{
 		if(e != null) 
 		{
-			e.setAttribute("Notes", notes);
-			e.setAttribute("Comments", comment);
+			Element n = new Element("Notes");
+			n.setText(notes);
+			e.addContent(n);
+			
+			Element c = new Element ("Comment");
+			c.setText(comment);
+			e.addContent(c);
 		}
 	}
 	
@@ -154,17 +179,18 @@ public class GmmlDataObject extends GmmlGraphicsData
 	 * @param gmmlWidth the width as specified in the GMML representation
 	 */
 	private void setGmmlWidth(double gmmlWidth) {
-		if ((objectType == ObjectType.SHAPE &&
-				shapeType == ShapeType.RECTANGLE) ||
-				objectType == ObjectType.LABEL ||
-				objectType == ObjectType.GENEPRODUCT)
-		{
-			width = gmmlWidth;
-		}		
-		else
-		{
-			width = gmmlWidth * 2;
-		}			
+//		if ((objectType == ObjectType.SHAPE &&
+//				shapeType == ShapeType.RECTANGLE) ||
+//				objectType == ObjectType.LABEL ||
+//				objectType == ObjectType.GENEPRODUCT)
+//		{
+//			width = gmmlWidth;
+//		}		
+//		else
+//		{
+//			width = gmmlWidth * 2;
+//		}
+		width = gmmlWidth;
 	}
 	
 	/**
@@ -173,17 +199,18 @@ public class GmmlDataObject extends GmmlGraphicsData
 	 */
 	private double getGmmlWidth() 
 	{
-		if ((objectType == ObjectType.SHAPE &&
-				shapeType == ShapeType.RECTANGLE) ||
-				objectType == ObjectType.LABEL ||
-				objectType == ObjectType.GENEPRODUCT)
-		{
-			return width;
-		}		
-		else
-		{
-			return width / 2;
-		}
+//		if ((objectType == ObjectType.SHAPE &&
+//				shapeType == ShapeType.RECTANGLE) ||
+//				objectType == ObjectType.LABEL ||
+//				objectType == ObjectType.GENEPRODUCT)
+//		{
+//			return width;
+//		}		
+//		else
+//		{
+//			return width / 2;
+//		}
+		return width;
 	}
 	
 	/**
@@ -195,17 +222,18 @@ public class GmmlDataObject extends GmmlGraphicsData
 	 */
 	private void setGmmlHeight(double gmmlHeight) 
 	{
-		if ((objectType == ObjectType.SHAPE &&
-				shapeType == ShapeType.RECTANGLE) ||
-				objectType == ObjectType.LABEL ||
-				objectType == ObjectType.GENEPRODUCT)
-		{
-			height = gmmlHeight;
-		}		
-		else
-		{
-			height = gmmlHeight * 2;
-		}			
+//		if ((objectType == ObjectType.SHAPE &&
+//				shapeType == ShapeType.RECTANGLE) ||
+//				objectType == ObjectType.LABEL ||
+//				objectType == ObjectType.GENEPRODUCT)
+//		{
+//			height = gmmlHeight;
+//		}		
+//		else
+//		{
+//			height = gmmlHeight * 2;
+//		}			
+		height = gmmlHeight;
 	}
 	
 	/**
@@ -214,17 +242,18 @@ public class GmmlDataObject extends GmmlGraphicsData
 	 */
 	private double getGmmlHeight() 
 	{
-		if ((objectType == ObjectType.SHAPE &&
-				shapeType == ShapeType.RECTANGLE) ||
-				objectType == ObjectType.LABEL ||
-				objectType == ObjectType.GENEPRODUCT)
-		{
-			return height;
-		}
-		else
-		{
-			return height / 2;
-		}
+//		if ((objectType == ObjectType.SHAPE &&
+//				shapeType == ShapeType.RECTANGLE) ||
+//				objectType == ObjectType.LABEL ||
+//				objectType == ObjectType.GENEPRODUCT)
+//		{
+//			return height;
+//		}
+//		else
+//		{
+//			return height / 2;
+//		}
+		return height;
 	}
 
 	// internal helper routine
@@ -247,7 +276,22 @@ public class GmmlDataObject extends GmmlGraphicsData
 			}
 		}		
 	}
+
+	private void mapSimpleCenter(Element e)
+	{
+		centerx = Double.parseDouble(e.getAttributeValue("CenterX")) / GmmlData.GMMLZOOM; 
+		centery = Double.parseDouble(e.getAttributeValue("CenterY")) / GmmlData.GMMLZOOM;	
+	}
 	
+	private void updateSimpleCenter(Element e)
+	{
+		if(e != null) 
+		{
+			e.setAttribute("CenterX", Double.toString(centerx * GmmlData.GMMLZOOM));
+			e.setAttribute("CenterY", Double.toString(centery * GmmlData.GMMLZOOM));			
+		}		
+	}
+
 	private void mapShapeData(Element e)
 	{
     	mapCenter(e);
@@ -272,14 +316,14 @@ public class GmmlDataObject extends GmmlGraphicsData
 	
 	private void mapShapeType(Element e)
 	{
-		e.setAttribute("Type", ShapeType.getMapping(shapeType));		
+		shapeType = ShapeType.getMapping(e.getAttributeValue("Type"));
 	}
 	
 	private void updateShapeType(Element e)
 	{
 		if(e != null) 
 		{
-			shapeType = ShapeType.getMapping(e.getAttributeValue("Type"));
+			e.setAttribute("Type", ShapeType.getMapping(shapeType));
 		}
 	}
 	
@@ -342,7 +386,9 @@ public class GmmlDataObject extends GmmlGraphicsData
     	fBold = (fontWeight != null && fontWeight.equals("Bold"));   	
     	fItalic = (fontStyle != null && fontStyle.equals("Italic"));    	
     	fUnderline = (fontDecoration != null && fontDecoration.equals("Underline"));    	
-    	fStrikethru = (fontStrikethru != null && fontStrikethru.equals("Strikethru"));    	
+    	fStrikethru = (fontStrikethru != null && fontStrikethru.equals("Strikethru"));
+    	
+    	fontName = graphics.getAttributeValue("FontName");
 	}
 	
 	private void updateLabelData(Element e)
@@ -574,7 +620,7 @@ public class GmmlDataObject extends GmmlGraphicsData
 	//Methods dealing with property table
 	public Hashtable<String, Object> propItems;
 
-	public void createJdomElement(Document doc) 
+	public Element createJdomElement() 
 	{		
 		Element e = null;
 		
@@ -582,49 +628,55 @@ public class GmmlDataObject extends GmmlGraphicsData
 		{
 			case ObjectType.GENEPRODUCT:
 				e = new Element("GeneProduct");
+				updateNotesAndComment(e);
 				e.addContent(new Element("Graphics"));			
 				updateGeneProductData(e);
-				updateNotesAndComment(e);
 				updateColor(e);
 				updateShapeData(e);
 				break;
 			case ObjectType.SHAPE:
 				e = new Element ("Shape");		
+				updateNotesAndComment(e);
 				e.addContent(new Element("Graphics"));
 					
 				updateColor(e);
 				updateRotation(e);
 				updateShapeData(e);
 				updateShapeType(e);
-				updateNotesAndComment(e);
 				break;
 			case ObjectType.BRACE:
 				e = new Element("Brace");
+				updateNotesAndComment(e);
 				e.addContent(new Element("Graphics"));
 					
-				updateNotesAndComment(e);
 				updateColor(e);
 				updateBraceData(e);
 				break;
 			case ObjectType.LINE:
 				e = new Element("Line");
-				e.addContent(new Element("Graphics"));
-				
-				updateLineData(e);
 				updateNotesAndComment(e);
+				e.addContent(new Element("Graphics"));				
+				updateLineData(e);
 				updateColor(e);
 				break;
 			case ObjectType.LABEL:
 				e = new Element("Label");
+				updateNotesAndComment(e);			
 				e.addContent(new Element("Graphics"));					
 				updateLabelData(e);
 				updateColor(e);
 				updateShapeData(e);
-				updateNotesAndComment(e);			
+				break;
+			case ObjectType.LEGEND:
+				e = new Element ("Legend");
+				updateSimpleCenter (e);
+				break;
+			case ObjectType.INFOBOX:
+				e = new Element ("InfoBox");
+				updateSimpleCenter (e);
 				break;
 		}
-		if (e != null)
-			doc.getRootElement().addContent(e);
-		// TODO: throw exception!
+		return e;
+		// TODO: throw exception if null!
 	}
 }
