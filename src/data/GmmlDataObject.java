@@ -53,6 +53,18 @@ public class GmmlDataObject extends GmmlGraphicsData
 				mapShapeType(e);
 				mapRotation(e);
 				break;
+			case ObjectType.FIXEDSHAPE:
+				mapCenter(e);
+				mapNotesAndComment(e);
+				mapShapeType(e);
+				break;
+			case ObjectType.COMPLEXSHAPE:
+				mapCenter(e);
+				mapWidth(e);
+				mapNotesAndComment(e);
+				mapShapeType(e);
+				mapRotation(e);
+				break;
 			case ObjectType.LEGEND:
 				mapSimpleCenter(e);
 				break;
@@ -277,6 +289,25 @@ public class GmmlDataObject extends GmmlGraphicsData
 		}		
 	}
 
+	private void mapWidth(Element e)
+	{
+    	Element graphics = e.getChild("Graphics");
+		setGmmlWidth(Double.parseDouble(graphics.getAttributeValue("Width")) / GmmlData.GMMLZOOM);
+			
+	}
+	
+	private void updateWidth(Element e)
+	{
+		if(e != null) 
+		{
+			Element jdomGraphics = e.getChild("Graphics");
+			if(jdomGraphics !=null) 
+			{
+				jdomGraphics.setAttribute("Width", Double.toString(getGmmlWidth() * GmmlData.GMMLZOOM));
+			}
+		}		
+	}
+
 	private void mapSimpleCenter(Element e)
 	{
 		centerx = Double.parseDouble(e.getAttributeValue("CenterX")) / GmmlData.GMMLZOOM; 
@@ -316,14 +347,14 @@ public class GmmlDataObject extends GmmlGraphicsData
 	
 	private void mapShapeType(Element e)
 	{
-		shapeType = ShapeType.getMapping(e.getAttributeValue("Type"));
+		shapeType = ShapeType.fromGmmlName(e.getAttributeValue("Type"));
 	}
 	
 	private void updateShapeType(Element e)
 	{
 		if(e != null) 
 		{
-			e.setAttribute("Type", ShapeType.getMapping(shapeType));
+			e.setAttribute("Type", ShapeType.toGmmlName(shapeType));
 		}
 	}
 	
@@ -419,6 +450,7 @@ public class GmmlDataObject extends GmmlGraphicsData
 		maintainedBy = e.getAttributeValue("Maintained-By");
 		email = e.getAttributeValue("Email");
 		lastModified = e.getAttributeValue("Last-Modified");
+		availability = e.getAttributeValue("Availability");
 		
 		Element g = e.getChild("Graphics");
 		boardWidth = Double.parseDouble(g.getAttributeValue("BoardWidth")) / GmmlData.GMMLZOOM;
@@ -426,7 +458,11 @@ public class GmmlDataObject extends GmmlGraphicsData
 		windowWidth = Double.parseDouble(g.getAttributeValue("WindowWidth")) / GmmlData.GMMLZOOM;
 		windowHeight = Double.parseDouble(g.getAttributeValue("WindowHeight"))/ GmmlData.GMMLZOOM;
 		mapInfoLeft = 0;//Integer.parseInt(g.getAttributeValue("MapInfoLeft")) / GmmlData.GMMLZOOM;		
-		mapInfoTop = 0;//Integer.parseInt(g.getAttributeValue("MapInfoTop")) / GmmlData.GMMLZOOM;		
+		mapInfoTop = 0;//Integer.parseInt(g.getAttributeValue("MapInfoTop")) / GmmlData.GMMLZOOM;
+		
+		notes = e.getChildText("Notes");
+		comment = e.getChildText("Comment");
+		
 	}
 	
 	private void updateMappInfoData(Element e)
@@ -642,6 +678,22 @@ public class GmmlDataObject extends GmmlGraphicsData
 				updateColor(e);
 				updateRotation(e);
 				updateShapeData(e);
+				updateShapeType(e);
+				break;
+			case ObjectType.FIXEDSHAPE:
+				e = new Element ("FixedShape");		
+				updateNotesAndComment(e);
+				e.addContent(new Element("Graphics"));					
+				updateCenter(e);
+				updateShapeType(e);
+				break;
+			case ObjectType.COMPLEXSHAPE:
+				e = new Element ("ComplexShape");		
+				updateNotesAndComment(e);
+				e.addContent(new Element("Graphics"));					
+				updateRotation(e);
+				updateCenter(e);
+				updateWidth(e);
 				updateShapeType(e);
 				break;
 			case ObjectType.BRACE:

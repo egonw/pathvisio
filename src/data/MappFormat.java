@@ -15,10 +15,6 @@ import java.util.*;
 import org.jdom.*;
 import debug.Logger;
 
-// don't need this for the commandline version!
-//import javax.swing.*;
-
-
 public class MappFormat
 {	
 	
@@ -363,7 +359,7 @@ public class MappFormat
 
 	public static List uncopyMappObjects(GmmlData data) throws ConverterException
 	{
-		List result = new ArrayList();
+		List<String[]> result = new ArrayList<String[]>();
 		
 		for (GmmlDataObject o : data.dataObjects)
 		{
@@ -580,9 +576,10 @@ public class MappFormat
 
 	public static GmmlDataObject mapLineType(String [] mappObject) throws ConverterException
 	{
+		// TODO: this shouldn't be named "GmmlLineTypes"
 		final List gmmlLineTypes = Arrays.asList(new String[] {
-				"DottedLine", "DottedArrow", "Line", "Arrow", "TBar", "Receptor", "LigandSquare", 
-				"ReceptorSquare", "LigandRound", "ReceptorRound"});
+				"DottedLine", "DottedArrow", "Line", "Arrow", "TBar", "Receptor", "LigandSq", 
+				"ReceptorSq", "LigandRd", "ReceptorRd"});
 		
     	GmmlDataObject o = new GmmlDataObject();
     	o.setObjectType(ObjectType.LINE);
@@ -598,7 +595,7 @@ public class MappFormat
     	{
     		lineType -= 2;
     	}
-    	if (lineType < 0) throw new ConverterException ("Invalid Line Type");
+    	if (lineType < 0) throw new ConverterException ("Invalid Line Type '" + type + "'");
     	
     	o.setLineStyle(lineStyle);
     	o.setLineType(lineType);
@@ -699,8 +696,12 @@ public class MappFormat
     	GmmlDataObject o = new GmmlDataObject();
     	o.setObjectType(ObjectType.GENEPRODUCT);
     	
+    	String syscode = mappObject[colSystemCode];
+    	if (syscode == null) syscode = "";
+    	syscode.trim();
+    	
         o.setDataSource(mapBetween (
-				systemCodes, dataSources, mappObject[colSystemCode].trim()));  
+				systemCodes, dataSources, syscode));  
         
         o.setBackpageHead(mappObject[colHead]);
         o.setGeneProductName(mappObject[colID]);
@@ -807,7 +808,7 @@ public class MappFormat
     {
     	GmmlDataObject o = new GmmlDataObject();
     	o.setObjectType(ObjectType.SHAPE);
-    	o.setShapeType(ShapeType.getMapping(mappObject[colType]));        
+    	o.setShapeType(ShapeType.fromMappName(mappObject[colType]));        
         mapShape (o, mappObject);
         mapColor (o, mappObject);
         mapRotation (o, mappObject);        
@@ -817,7 +818,7 @@ public class MappFormat
     public static void unmapShapeType (GmmlDataObject o, String[] mappObject)
     {    	
     	int shapeType = o.getShapeType();
-    	mappObject[colType] = ShapeType.getMapping(shapeType);    	
+    	mappObject[colType] = ShapeType.toMappName(shapeType);    	
     	unmapShape (o, mappObject);
     	unmapColor (o, mappObject);
     	unmapRotation (o, mappObject);    	
@@ -827,7 +828,7 @@ public class MappFormat
     {
     	GmmlDataObject o = new GmmlDataObject();
     	o.setObjectType(ObjectType.FIXEDSHAPE);
-        o.setShapeType(ShapeType.getMapping(mappObject[colType]));
+        o.setShapeType(ShapeType.fromMappName(mappObject[colType]));
         mapCenter (o, mappObject);
         return o;        
     }
@@ -835,7 +836,7 @@ public class MappFormat
     public static void unmapFixedShapeType (GmmlDataObject o, String[] mappObject)
     {    	
     	int shapeType = o.getShapeType();
-    	mappObject[colType] = ShapeType.getMapping(shapeType);
+    	mappObject[colType] = ShapeType.toMappName(shapeType);
     	
     	if (shapeType == ShapeType.CELLA)
     	{
@@ -847,42 +848,27 @@ public class MappFormat
     	unmapCenter (o, mappObject);
     }
         
-    
     public static GmmlDataObject mapComplexShapeType(String[] mappObject) throws ConverterException 
 	{       		
     	GmmlDataObject o = new GmmlDataObject();
     	o.setObjectType(ObjectType.COMPLEXSHAPE);
-    	o.setShapeType(ShapeType.getMapping(mappObject[colType]));
-        
-    	/*
-    	 //TODO
-    	 
-        if (mappObject[colType].equals("Poly"))
+    	
+    	if (mappObject[colType].equals("Poly"))
         {
         	switch ((int)Double.parseDouble(mappObject[colSecondY]))
         	{
-        	case 3: type = "Triangle"; break;
-        	case 5: type = "Pentagon"; break;
-        	case 6: type = "Hexagon"; break;
+        	case 3: o.setShapeType(ShapeType.TRIANGLE); break;
+        	case 5: o.setShapeType(ShapeType.PENTAGON); break;
+        	case 6: o.setShapeType(ShapeType.HEXAGON); break;
         	default: throw
         		new ConverterException ("Found polygon with unexpectec edge count: " + 
         				mappObject[colSecondY]); 
         	}
         }
-        else if (mappObject[colType].equals("Vesicle"))
-        {
-        	type = "Vesicle";        
-        }
-        else if (mappObject[colType].equals("ProteinB"))
-        {
-        	type = "ProteinComplex";
-        }
-        else
-        {
-        	throw new ConverterException (
-        			"Unexpected ComplexShape type: " + mappObject[colType]);
-        }
-        */
+    	else
+    	{
+    		o.setShapeType(ShapeType.fromMappName(mappObject[colType]));            
+    	}
         
         o.setWidth(Double.parseDouble(mappObject[colWidth]));
         mapCenter (o, mappObject);
@@ -893,30 +879,18 @@ public class MappFormat
     public static void unmapComplexShapeType (GmmlDataObject o, String[] mappObject)
     {   
     	int shapeType = o.getShapeType();
-    	mappObject[colType] = ShapeType.getMapping(shapeType);
-/*
- 		//TODO
-    	String type = e.getAttributeValue("Type");
-    	if (type.equals("Triangle"))
+    	mappObject[colType] = ShapeType.toMappName(shapeType);
+ 		
+    	if (shapeType == ShapeType.TRIANGLE)
     	{
-    		mappObject[colType] = "Poly";
     		mappObject[colSecondY] = "3";
-    	} else if (type.equals("Pentagon"))
+    	} else if (shapeType == ShapeType.PENTAGON)
     	{
-    		mappObject[colType] = "Poly";
     		mappObject[colSecondY] = "5";    		
-		} else if (type.equals("Hexagon"))
+		} else if (shapeType == ShapeType.HEXAGON)
 		{
-			mappObject[colType] = "Poly";
 			mappObject[colSecondY] = "6";  			
-		} else if (type.equals("ProteinComplex"))
-		{
-			mappObject[colType] = "ProteinB";
-		} else if (type.equals("Vesicle"))
-		{
-			mappObject[colType] = "Vesicle";
 		}
-    	*/
     	
     	unmapCenter (o, mappObject);
         unmapRotation (o, mappObject);

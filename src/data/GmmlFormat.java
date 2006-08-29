@@ -24,7 +24,7 @@ public class GmmlFormat {
 		// the constructor.
 		private final String[] elements = new String[] {
 			"Notes", "Comment", "Graphics", "GeneProduct", "Line", "Label",
-			"Shape", "Brace", "CellShape", "CellComponentShape", "ComplexShape", "InfoBox", "Legend"
+			"Shape", "Brace", "FixedShape", "ComplexShape", "InfoBox", "Legend"
 		};
 		
 		/*
