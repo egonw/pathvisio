@@ -26,9 +26,8 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-import data.GmmlData;
-
 import util.TableColumnResizer;
+import data.GmmlData;
 
 public class GmmlPropertyTable extends Composite implements GmmlListener {
 	public TableViewer tableViewer;

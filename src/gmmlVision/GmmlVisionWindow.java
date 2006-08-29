@@ -49,6 +49,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import preferences.GmmlPreferenceManager;
 import search.PathwaySearchComposite;
+import R.RController;
 import colorSet.ColorSetWindow;
 import data.GmmlData;
 import data.GmmlGdb;
@@ -430,7 +431,7 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 		}
 		
 		public void run() {
-			if(GmmlGdb.isConnected())
+			if(!GmmlGdb.isConnected())
 			{
 				MessageDialog.openWarning(getShell(), "Warning", "No gene database selected, " +
 						"select gene database before creating a new expression dataset");
@@ -613,6 +614,26 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 	private AboutAction aboutAction = new AboutAction(this);
 	
 	/**
+	 * {@link Action} to open the R-interface dialog
+	 */
+	private class RAction extends Action
+	{
+		GmmlVisionWindow window;
+		public RAction (GmmlVisionWindow w)
+		{
+			window = w;
+			setText("Pathway &statistics@Ctrl+R");
+		}
+		
+		public void run() {
+			RController rc = new RController(getShell());
+			if(rc.startR()) rc.open();
+		}
+	}
+	private RAction rAction = new RAction(this);
+	
+	
+	/**
 	 * String displayed in the colorset combo when no colorset is selected
 	 */
 	final static String COMBO_NO_COLORSET = "No colorset";
@@ -661,7 +682,7 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 			else
 			{
 				GmmlGex.setColorSetIndex(colorSetCombo.getSelectionIndex() - 1);
-				if(GmmlGdb.isConnected())
+				if(!GmmlGdb.isConnected())
 				{
 					MessageDialog.openWarning(getShell(), "Warning", "No gene database selected");
 				}
@@ -1071,13 +1092,7 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 				colorSetCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
 				colorSetCombo.setToolTipText("Select the colorset for coloring gene boxes");
 				colorSetCombo.addSelectionListener(new ColorSetComboListener());
-				String[] colorSets = GmmlGex.getColorSetNames();
-				if(colorSets != null) {
-					String[] comboItems = new String[colorSets.length + 1];
-					comboItems[0] = COMBO_NO_COLORSET;
-					System.arraycopy(colorSets, 0, comboItems, 1, colorSets.length);
-					colorSetCombo.setItems(comboItems);
-				}
+				setColorSetComboItems();
 				colorSetCombo.pack();
 				return colorSetCombo;
 			}
@@ -1134,6 +1149,22 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 		getCoolBarManager().update(true);
 	}
 
+	public void updateColorSetCombo() {
+		if(colorSetCombo == null || colorSetCombo.isDisposed()) return;
+		setColorSetComboItems();
+	}
+	
+	private void setColorSetComboItems() {
+		if(colorSetCombo == null || colorSetCombo.isDisposed()) return;
+		String[] colorSets = GmmlGex.getColorSetNames();
+		if(colorSets != null) {
+			String[] comboItems = new String[colorSets.length + 1];
+			comboItems[0] = COMBO_NO_COLORSET;
+			System.arraycopy(colorSets, 0, comboItems, 1, colorSets.length);
+			colorSetCombo.setItems(comboItems);
+		}
+	}
+	
 	protected StatusLineManager createStatusLineManager() {
 		return super.createStatusLineManager();
 	}
@@ -1171,6 +1202,7 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 		dataMenu.add(selectGexAction);
 		dataMenu.add(createGexAction);
 		dataMenu.add(colorSetManagerAction);
+//		dataMenu.add(rAction);
 		MenuManager convertMenu = new MenuManager("&Convert from GenMAPP 2");
 		convertMenu.add(convertGexAction);
 		convertMenu.add(convertGdbAction);
@@ -1295,7 +1327,7 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 			drawing.setSize(drawing.getMappInfo().getBoardSize());
 			if(GmmlGex.isConnected()) { 
 				cacheExpressionData();
-				if(!colorSetCombo.isDisposed())
+				if(colorSetCombo != null && !colorSetCombo.isDisposed())
 					GmmlGex.setColorSetIndex(colorSetCombo.getSelectionIndex() - 1); //-1 because the first item is "no colorset"
 			}
 		}

@@ -96,6 +96,11 @@ public abstract class GmmlGex {
 		if(d != null) { d.redraw(); }
 	}
 	
+	public static void setColorSet(GmmlColorSet cs) {
+		int ci = getColorSets().indexOf(cs);
+		if(ci > -1) setColorSetIndex(ci);
+	}
+	
 	/**
 	 * Get the index of the currently used colorset
 	 * @return
@@ -493,7 +498,7 @@ public abstract class GmmlGex {
 			}
 		}
 		
-		return exprInfo + colNames + dataString;
+		return exprInfo + colNames + dataString + "</TABLE>";
 	}
 	
 	/**

@@ -1,9 +1,7 @@
 package graphics;
 import java.awt.Rectangle;
-import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.Point2D;
 
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.GC;
@@ -202,11 +200,11 @@ public abstract class GmmlDrawingObject implements Comparable
 		if(isSelected() && d.isSelected()) {
 			; //objects are both selected, keep original sort order
 		}
-		else if(isSelected())
+		else if(isSelected() || isHighlighted())
 		{
 			az = GmmlDrawing.DRAW_ORDER_SELECTED;
 		}
-		else if(d.isSelected())
+		else if(d.isSelected() || d.isHighlighted())
 		{
 			bz = GmmlDrawing.DRAW_ORDER_SELECTED;
 		}

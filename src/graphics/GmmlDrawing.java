@@ -447,6 +447,7 @@ PaintListener, MouseTrackListener, KeyListener
 		Point2D p = new Point2D.Double(e.x, e.y);
 		GmmlDrawingObject obj = null;
 		Collections.sort(drawingObjects);
+		Collections.reverse(drawingObjects);
 		for (GmmlDrawingObject o : drawingObjects)
 		{
 			if (o.isContain(p))
@@ -531,7 +532,9 @@ PaintListener, MouseTrackListener, KeyListener
 				if(!(pressedObject instanceof GmmlSelectionBox))
 				{
 					clearSelection();
-					pressedObject.select();
+					s.addToSelection(pressedObject);
+				} else { //Check if clicked object inside selectionbox
+					if(s.getChild(p2d) == null) clearSelection();
 				}
 			}
 			
@@ -791,7 +794,7 @@ PaintListener, MouseTrackListener, KeyListener
 		if(e.keyCode == SWT.DEL) {
 			for(GmmlDrawingObject o : drawingObjects)
 			{
-				if(!o.isSelected()) continue; //Object not selected, skip
+				if(!o.isSelected() || o == s || o == mappInfo) continue; //Object not selected, skip
 				toRemove.add(o);
 				if(o instanceof GmmlGraphics) //Also add handles
 				{

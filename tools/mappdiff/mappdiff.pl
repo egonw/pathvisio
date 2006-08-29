@@ -239,7 +239,9 @@ sub info_row_diff
 	if ($output)
 	{
 		print "In Info row: \n$output";
+		return 1;
 	}
+	return 0;
 }
 
 # sorting routine
@@ -258,7 +260,7 @@ sub by_object_row ($$)
 
 my $diffCount = 0;
 
-info_row_diff ($info1, $info2);
+$diffCount += info_row_diff ($info1, $info2);
 
 while (@data1 > 0 || @data2 > 0)
 {
