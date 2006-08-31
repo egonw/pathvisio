@@ -9,6 +9,8 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.GC;
 import org.jdom.Document;
 
+import data.GmmlDataObject;
+
 /**
  * This class implements a selectionbox 
  */ 
@@ -26,7 +28,8 @@ class GmmlSelectionBox extends GmmlGraphicsShape
 	 */
 	public GmmlSelectionBox(GmmlDrawing canvas)
 	{
-		super(canvas);
+		// TODO: selectionbox shouldn't need a dataobject...
+		super(canvas, new GmmlDataObject());
 		drawingOrder = GmmlDrawing.DRAW_ORDER_SELECTIONBOX;
 		
 		selection = new ArrayList<GmmlDrawingObject>();

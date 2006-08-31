@@ -29,19 +29,11 @@ public class GmmlMappInfo extends GmmlGraphics {
 	
 	int sizeX = 1;
 	int sizeY = 1; //Real size is calculated on first call to draw()
-
-	public GmmlMappInfo(GmmlDrawing canvas) 
-	{
-		super(canvas);
-		canvas.setMappInfo(this);
-		drawingOrder = GmmlDrawing.DRAW_ORDER_MAPPINFO;
-		
-		gdata.setObjectType(ObjectType.MAPPINFO);		
-	}
 	
-	public GmmlMappInfo (GmmlDrawing canvas, GmmlDataObject _gdata) {
-		this(canvas);
-		gdata = _gdata;
+	public GmmlMappInfo (GmmlDrawing canvas, GmmlDataObject o) {
+		super(canvas, o);
+		canvas.setMappInfo(this);
+		drawingOrder = GmmlDrawing.DRAW_ORDER_MAPPINFO;		
 	}
 
 	public void setName(String name) { 

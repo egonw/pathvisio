@@ -2,7 +2,7 @@
 <Pathway Name="G13 Signaling Pathway" Data-Source="GenMAPP 2.0" Version="20041103" Author="Anita Chow" Maintained-By="GenMAPP.org" Email="genmapp@gladstone.ucsf.edu" Availability="2000, Gladstone Institutes" Last-Modified="3/6/02">
   <Notes></Notes>
   <Comment></Comment>
-  <Graphics BoardWidth="213000.0" BoardHeight="187500.0" WindowWidth="217680.0" WindowHeight="212655.0" />
+  <Graphics BoardWidth="14200.0" BoardHeight="12500.0" WindowWidth="14512.0" WindowHeight="14177.0" />
   <GeneProduct GeneID="LIMK1" Xref="" Type="unknown" Name="3984" BackpageHead="" GeneProduct-Data-Source="LocusLink">
     <Notes></Notes>
     <Comment></Comment>

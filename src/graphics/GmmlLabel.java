@@ -76,60 +76,14 @@ public class GmmlLabel extends GmmlGraphicsShape
 	 * Constructor for this class
 	 * @param canvas - the GmmlDrawing this label will be part of
 	 */
-	public GmmlLabel(GmmlDrawing canvas)
+	public GmmlLabel(GmmlDrawing canvas, GmmlDataObject o)
 	{
-		super(canvas);
+		super(canvas, o);
 		drawingOrder = GmmlDrawing.DRAW_ORDER_LABEL;
-
-		gdata.setFontSize (INITIAL_FONTSIZE);
-		gdata.setObjectType(ObjectType.LABEL);
-	}
-	
-	/**
-	 * Constructor for this class
-	 * @param x - x coordinate
-	 * @param y - y coordinate
-	 * @param width - widht
-	 * @param height - height
-	 * @param text - the labels text
-	 * @param font - the labels font
-	 * @param fontWeight - fontweigth
-	 * @param fontStyle - fontstyle
-	 * @param fontSize - fontsize
-	 * @param color - the color the label is painted
-	 * @param canvas - the GmmlDrawing the label will be part of
-	 */
-	public GmmlLabel (int x, int y, int width, int height, String text, String font, String fontWeight, 
-		String fontStyle, int fontSize, RGB color, GmmlDrawing canvas)
-	{
-		this(canvas);
-		
-		gdata.setCenterX(x);
-		gdata.setCenterY(y);
-		gdata.setWidth(width);
-		gdata.setHeight(height);
-				
 		setHandleLocation();
 	}
 	
-	public GmmlLabel (int x, int y, int width, int height, GmmlDrawing canvas)
-	{
-		this(canvas);
-		
-		gdata.setCenterX(x);
-		gdata.setCenterY(y);
-		gdata.setWidth(width);
-		gdata.setHeight(height);
-		
-		setHandleLocation();		
-	}
 	
-	public GmmlLabel (GmmlDrawing canvas, GmmlDataObject _gdata) {
-		this(canvas);
-		gdata = _gdata;		
-		setHandleLocation();
-	}
-
 	public void setLabelText(String text) {
 		gdata.setLabelText (text);
 		
@@ -151,8 +105,6 @@ public class GmmlLabel extends GmmlGraphicsShape
 		gdata.setTop(gdata.getTop() - (nHeight - gdata.getHeight())/2);
 		gdata.setWidth(nWidth);
 		gdata.setHeight(nHeight);
-		
-		gdata.updateToPropItems();
 		
 		setHandleLocation();
 	}
@@ -194,9 +146,9 @@ public class GmmlLabel extends GmmlGraphicsShape
 	
 	protected void disposeTextControl()
 	{
-		markDirty();
+//		markDirty();
 		setLabelText(t.getText());
-		markDirty();
+//		markDirty();
 		Composite c = t.getParent();
 		c.setVisible(false);
 		c.dispose();

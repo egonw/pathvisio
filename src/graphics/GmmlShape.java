@@ -34,41 +34,10 @@ public class GmmlShape extends GmmlGraphicsShape
 	 * Constructor for this class
 	 * @param canvas - the GmmlDrawing this GmmlShape will be part of
 	 */
-	public GmmlShape(GmmlDrawing canvas)
+	public GmmlShape(GmmlDrawing canvas, GmmlDataObject o)
 	{
-		super(canvas);
+		super(canvas, o);
 		drawingOrder = GmmlDrawing.DRAW_ORDER_SHAPE;
-		gdata.setObjectType(ObjectType.SHAPE);
-	}
-		
-	/**
-	 * Constructor for this class
-	 * @param x - the upper left corner x coordinate
-	 * @param y - the upper left corner y coordinate
-	 * @param width - the width
-	 * @param height - the height
-	 * @param type - this shapes type (0 for rectangle, 1 for ellipse)
-	 * @param color - the color this geneproduct will be painted
-	 * @param canvas - the GmmlDrawing this geneproduct will be part of
-	 */
-	public GmmlShape(double x, double y, double width, double height, int type, RGB color, double rotation, GmmlDrawing canvas)
-	{
-		this(canvas);
-		
-		gdata.setCenterX (x);
-		gdata.setCenterY (y);
-		gdata.setWidth(width);
-		gdata.setHeight(height);
-		gdata.setColor(color);
-		gdata.setShapeType(type);
-		gdata.setRotation (rotation);
-
-		setHandleLocation();
-	}
-	
-	public GmmlShape (GmmlDrawing canvas, GmmlDataObject _gdata) {
-		this(canvas);
-		gdata = _gdata;		
 		setHandleLocation();
 	}
 	

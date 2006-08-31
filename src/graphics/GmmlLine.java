@@ -29,45 +29,26 @@ import data.*;
 /**
  * This class implements and handles a line
  */
-public class GmmlLine extends GmmlGraphicsLine
+public class GmmlLine extends GmmlGraphics
 {
+	//TODO: make private
+	public GmmlHandle handleStart;
+	public GmmlHandle handleEnd;
 	private static final long serialVersionUID = 1L;
 	
 	/**
 	 * Constructor for this class
 	 * @param canvas - the GmmlDrawing this line will be part of
 	 */
-	public GmmlLine(GmmlDrawing canvas, double startx, double starty, double endx, double endy)
+	public GmmlLine(GmmlDrawing canvas, GmmlDataObject o)
 	{
-		super(canvas, startx, starty, endx, endy);
-		gdata.setObjectType(ObjectType.LINE);
+		super(canvas, o);
 		drawingOrder = GmmlDrawing.DRAW_ORDER_LINE;
-	}
-	
-	/**
-	 * Constructor for this class
-	 * @param startx - start x coordinate
-	 * @param starty - start y coordinate
-	 * @param endx - end x coordinate
-	 * @param endy - end y coordinate
-	 * @param color - color this line will be painted
-	 * @param canvas - the GmmlDrawing this line will be part of
-	 */
-	public GmmlLine(double startx, double starty, double endx, double endy, RGB color, GmmlDrawing canvas)
-	{
-		this(canvas, startx, starty, endx, endy);
-		
-		gdata.setColor (color);
-		
+		handleStart	= new GmmlHandle(GmmlHandle.DIRECTION_FREE, this, canvas);
+		handleEnd	= new GmmlHandle(GmmlHandle.DIRECTION_FREE, this, canvas);
 		setHandleLocation();
 	}
-	
-	public GmmlLine (GmmlDrawing canvas, GmmlDataObject _gdata) {
-		this(canvas, 0, 0, 0, 0);
-		gdata = _gdata;		
-		setHandleLocation();
-	}
-	
+		
 	protected void draw(PaintEvent e, GC buffer)
 	{
 		double endx = gdata.getEndX();
@@ -259,6 +240,99 @@ public class GmmlLine extends GmmlGraphicsLine
 		
 		buffer.drawPolygon (points);
 		buffer.fillPolygon (points);
+	}
+
+	/**
+	 * Constructs the line for the coordinates stored in this class
+	 */
+	public Line2D getLine()
+	{
+		return new Line2D.Double(gdata.getStartX(), gdata.getStartY(), gdata.getEndX(), gdata.getEndY());
+	}
+	
+	/**
+	 * Sets the line start and end to the coordinates specified
+	 * <DL><B>Parameters</B>
+	 * <DD>Double x1	- new startx 
+	 * <DD>Double y1	- new starty
+	 * <DD>Double x2	- new endx
+	 * <DD>Double y2	- new endy
+	 */
+	public void setLine(double x1, double y1, double x2, double y2)
+	{
+		gdata.setStartX(x1);
+		gdata.setStartY(y1);
+		gdata.setEndX(x2);
+		gdata.setEndY(y2);
+		
+//		setHandleLocation();		
+	}
+	
+	public void setScaleRectangle(Rectangle2D.Double r) {
+//		markDirty();
+		gdata.setStartX(r.x);
+		gdata.setStartY(r.y);
+		gdata.setEndY (r.x + r.width);
+		gdata.setEndY (r.y + r.height);
+		
+//		setHandleLocation();
+//		markDirty();
+	}
+	
+	protected Rectangle2D.Double getScaleRectangle() {
+		return new Rectangle2D.Double(gdata.getStartX(), gdata.getStartY(), gdata.getEndX()
+				- gdata.getStartX(), gdata.getEndY() - gdata.getStartY());
+	}
+	
+	/**
+	 * Sets this class handles at the correct position 
+	 */
+	protected void setHandleLocation()
+	{
+		handleStart.setLocation(gdata.getStartX(), gdata.getStartY());
+		handleEnd.setLocation(gdata.getEndX(), gdata.getEndY());
+	}
+	
+	public GmmlHandle[] getHandles()
+	{
+		return new GmmlHandle[] { handleStart, handleEnd };
+	}
+	
+	protected void adjustToHandle(GmmlHandle h) {
+//		markDirty();
+		if		(h == handleStart) {
+			gdata.setStartX(h.centerx); 
+			gdata.setStartY(h.centery);
+		}
+		else if	(h == handleEnd) {
+			gdata.setEndX(h.centerx); 
+			gdata.setEndY(h.centery);
+		}
+//		markDirty();
+	}
+	
+	protected void moveBy(double dx, double dy)
+	{
+//		markDirty();
+		setLine(gdata.getStartX() + dx, gdata.getStartY() + dy, 
+				gdata.getEndX() + dx, gdata.getEndY() + dy);
+//		markDirty();		
+//		setHandleLocation();
+	}
+	
+	protected void adjustToZoom(double factor)
+	{
+		gdata.setStartX(gdata.getStartX() * factor);
+		gdata.setStartY(gdata.getStartY() * factor);
+		gdata.setEndX(gdata.getEndX() * factor);
+		gdata.setEndY(gdata.getEndY() * factor);
+		
+//		setHandleLocation();
+	}
+	
+	public void gmmlObjectModified(GmmlEvent e) {		
+		markDirty(); // mark everything dirty
+		setHandleLocation();
 	}
 
 }

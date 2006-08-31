@@ -2,7 +2,7 @@
 <Pathway Name="DNA Replication" Data-Source="GenMAPP 2.0" Version="20041216" Author="David Koren, Kam Dahlquist" Maintained-By="Kam Dahlquist" Email="genmapp@gladstone.ucsf.edu" Availability="" Last-Modified="4/8/04">
   <Notes>http://www.genomeknowledge.org/cgi-bin/eventbrowser?DB=gk_current&amp;ID=69306</Notes>
   <Comment>Based on www.genomeknowledge.org</Comment>
-  <Graphics BoardWidth="468625.5" BoardHeight="307881.0" WindowWidth="284625.0" WindowHeight="223650.0" />
+  <Graphics BoardWidth="31241.700000000004" BoardHeight="20525.4" WindowWidth="18975.0" WindowHeight="14910.0" />
   <GeneProduct GeneID="RPA2" Xref="" Type="unknown" Name="6118" BackpageHead="DNA replication factor-A protein 2" GeneProduct-Data-Source="LocusLink">
     <Notes></Notes>
     <Comment></Comment>

@@ -12,6 +12,8 @@ import org.eclipse.swt.graphics.Transform;
 import util.LinAlg;
 import util.LinAlg.Point;
 import data.GmmlData;
+import data.GmmlDataObject;
+import data.GmmlEvent;
 
 /**
  * This is an {@link GmmlGraphics} class representing shapelike forms,
@@ -35,18 +37,18 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	
 	final GmmlHandle[][] handleMatrix; //Used to get opposite handles
 	
-	public GmmlGraphicsShape(GmmlDrawing canvas) {
-		super(canvas);
+	public GmmlGraphicsShape(GmmlDrawing canvas, GmmlDataObject o) {
+		super(canvas, o);
 		
 		handleN	= new GmmlHandle(GmmlHandle.DIRECTION_Y, this, canvas);
 		handleE	= new GmmlHandle(GmmlHandle.DIRECTION_X, this, canvas);
 		handleS	= new GmmlHandle(GmmlHandle.DIRECTION_Y, this, canvas);
 		handleW	= new GmmlHandle(GmmlHandle.DIRECTION_X, this, canvas);
 				
-		handleNE	= new GmmlHandle(GmmlHandle.DIRECTION_FREE, this, canvas);
-		handleSE	= new GmmlHandle(GmmlHandle.DIRECTION_FREE, this, canvas);
-		handleSW	= new GmmlHandle(GmmlHandle.DIRECTION_FREE, this, canvas);
-		handleNW	= new GmmlHandle(GmmlHandle.DIRECTION_FREE, this, canvas);
+		handleNE = new GmmlHandle(GmmlHandle.DIRECTION_FREE, this, canvas);
+		handleSE = new GmmlHandle(GmmlHandle.DIRECTION_FREE, this, canvas);
+		handleSW = new GmmlHandle(GmmlHandle.DIRECTION_FREE, this, canvas);
+		handleNW = new GmmlHandle(GmmlHandle.DIRECTION_FREE, this, canvas);
 		
 		handleR = new GmmlHandle(GmmlHandle.DIRECTION_ROT, this, canvas);
 		
@@ -69,15 +71,15 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 	
 	public void moveBy(double dx, double dy)
 	{
-		markDirty();
+//		markDirty();
 		gdata.setLeft(gdata.getLeft() + dx); 
 		gdata.setTop(gdata.getTop() + dy);
-		markDirty();
-		setHandleLocation();		
+//		markDirty();
+//		setHandleLocation();		
 	}
 				
 	public void setScaleRectangle(Rectangle2D.Double r) {
-		markDirty();
+//		markDirty();
 		
 		//Scale object
 		gdata.setWidth (r.width);
@@ -86,8 +88,8 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 		gdata.setLeft(r.x);
 		gdata.setTop(r.y);
 		
-		setHandleLocation();
-		markDirty();
+//		setHandleLocation();
+//		markDirty();
 	}
 
 	protected Rectangle2D.Double getScaleRectangle() {
@@ -231,7 +233,7 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 			
 			setRotation(gdata.getRotation() - LinAlg.angle(def, cur));
 		
-			setHandleLocation(h);
+//			setHandleLocation(h);
 			return;
 		}
 					
@@ -273,7 +275,7 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 			negativeHeight(h);
 		}	
 				
-		setHandleLocation(h);
+//		setHandleLocation(h);
 	}
 	
 	/**
@@ -451,14 +453,10 @@ public abstract class GmmlGraphicsShape extends GmmlGraphics {
 			gc.dispose();
 		}
 		return getOutline().getBounds();
-	}	
-
-	public void updateFromPropItems()
-	{
-		markDirty();	
-		gdata.updateFromPropItems();
-		markDirty();
+	}
+	
+	public void gmmlObjectModified(GmmlEvent e) {		
+		markDirty(); // mark everything dirty
 		setHandleLocation();
-		canvas.redrawDirtyRect();
 	}
 }

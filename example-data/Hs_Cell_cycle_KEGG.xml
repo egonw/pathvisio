@@ -2,7 +2,7 @@
 <Pathway Name="Cell cycle" Data-Source="GenMAPP 2.0" Version="20041203" Author="Adapted from KEGG" Maintained-By="GenMAPP.org" Email="genmapp@gladstone.ucsf.edu" Availability="" Last-Modified="10/02/2002">
   <Notes>Adapted from: http://www.genome.ad.jp/kegg/pathway/hsa/hsa04110.html</Notes>
   <Comment>Right-click here to see notes</Comment>
-  <Graphics BoardWidth="249345.0" BoardHeight="212625.0" WindowWidth="251325.0" WindowHeight="213075.0" />
+  <Graphics BoardWidth="16623.0" BoardHeight="14175.0" WindowWidth="16755.0" WindowHeight="14205.0" />
   <GeneProduct GeneID="ORC6L" Xref="" Type="unknown" Name="23594" BackpageHead="" GeneProduct-Data-Source="LocusLink">
     <Notes></Notes>
     <Comment>ORC6L; origin recognition complex  subunit 6-like (yeast)</Comment>

@@ -17,15 +17,17 @@ import data.*;
  * This class is a parent class for all graphics
  * that can be added to a GmmlDrawing.
  */
-public abstract class GmmlGraphics extends GmmlDrawingObject
+public abstract class GmmlGraphics extends GmmlDrawingObject implements GmmlListener
 {
 	public static RGB selectColor = GmmlPreferences.getColorProperty("colors.selectColor");
 	public static RGB highlightColor = GmmlPreferences.getColorProperty("colors.highlightColor");
 	
-	protected GmmlDataObject gdata = new GmmlDataObject();
+	protected GmmlDataObject gdata = null;
 	
-	public GmmlGraphics(GmmlDrawing canvas) {
+	public GmmlGraphics(GmmlDrawing canvas, GmmlDataObject o) {
 		super(canvas);
+		o.addListener(this);
+		gdata = o;
 	}
 	
 	public void select()
@@ -46,14 +48,9 @@ public abstract class GmmlGraphics extends GmmlDrawingObject
 		}
 	}
 	
-	public void updateFromPropItems()
-	{
-		markDirty();	
-		gdata.updateFromPropItems();
-		markDirty();
-		//setHandleLocation();
-		canvas.redrawDirtyRect();
-	}
+//	public List getAttributes() { return gdata.getAttributes() ;}
 	
-	public List getAttributes() { return gdata.getAttributes() ;}
+	public void gmmlObjectModified(GmmlEvent e) {		
+		markDirty(); // mark everything dirty
+	}
 }

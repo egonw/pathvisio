@@ -36,7 +36,26 @@ public class GmmlPropertyTable extends Composite implements GmmlListener {
 	ColorCellEditor colorEditor;
 	ComboBoxCellEditor comboBoxEditor;
 	
-	public GmmlDataObject g;
+	private GmmlDataObject g = null;
+	private List<String> attributes;
+	
+	public GmmlDataObject getGmmlDataObject ()
+	{
+		return g;
+	}
+	
+	public void setGmmlDataObject (GmmlDataObject o)
+	{
+		if (o != g)
+		{
+			if (g != null) { g.removeListener(this); }
+			g = o;
+			attributes = g.getAttributes();
+			tableViewer.setInput(g);			
+			tableViewer.refresh();
+			g.addListener(this);
+		}
+	}
 
 	final static String[] colNames = new String[] {"Property", "Value"};
 	
@@ -50,22 +69,24 @@ public class GmmlPropertyTable extends Composite implements GmmlListener {
 	final static int ORIENTATION = 6;
 	
 	// Type mappings
-	final static List<String> attributes = Arrays.asList(new String[] {
+	final static List<String> totalAttributes = Arrays.asList(new String[] {
 			"CenterX", "CenterY", "StartX", "StartY", "EndX", "EndY", "Width", "Height", 
-			"Color", "Style", "Type", "Rotation", "Orientation", "PicPointOffset",
+			"Color", "LineStyle", "Type", "Rotation", "Orientation", "PicPointOffset",
 			"GeneID", "Xref", "TextLabel", "FontName", "FontWeight", "FontStyle", "FontSize",
 			"Name", "Organism", "Data-Source", "Version", "Author", "Maintained-By", "Email",
 			"Availability", "Last-Modified", "Notes", "BackpageHead", "GeneProduct-Data-Source",
-			"BoardWidth", "BoardHeight", "WindowWidth", "WindowHeight", "MapInfoLeft", "MapInfoTop"
+			"BoardWidth", "BoardHeight", "WindowWidth", "WindowHeight", "MapInfoLeft", "MapInfoTop",
+			"Comment", "LineType"
 	});
 	
 	final static List labelMappings = Arrays.asList(new String[] {
 			"Center X", "Center Y", "Start X", "Start Y", "End X", "End Y", "Width", "Height", 
-			"Color", "Style", "Type", "Rotation", "Orientation", "Pic point offset",
+			"Color", "Line Style", "Type", "Rotation", "Orientation", "Pic point offset",
 			"Gene label", "Link (xref)", "Label text", "Font name", "Font weight", "Font style", "Font size",
 			"Name", "Organism", "Data source", "Version", "Author", "Maintained by", "E-mail",
 			"Availability", "Last modified", "Notes", "Backpage header", "System",
-			"Board Width", "Board Height", "Window Width", "Window Height", "Location X", "Location Y"
+			"Board Width", "Board Height", "Window Width", "Window Height", "Location X", "Location Y",
+			"Comment", "Line Type"
 	});
 
 	final static int[] attributeTypes = new int[] {
@@ -73,7 +94,8 @@ public class GmmlPropertyTable extends Composite implements GmmlListener {
 		COLOR, LINESTYLE, TYPE, DOUBLE, ORIENTATION, DOUBLE,
 		STRING, STRING, STRING, STRING, STRING, STRING, INTEGER, STRING, 
 		STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING,
-		STRING, STRING, TYPE, INTEGER, INTEGER, INTEGER, INTEGER, INTEGER, INTEGER
+		STRING, STRING, TYPE, INTEGER, INTEGER, INTEGER, INTEGER, INTEGER, INTEGER,
+		STRING, TYPE, TYPE
 	};
 	
 	//System names converted to arraylist for easy index lookup
@@ -109,18 +131,12 @@ public class GmmlPropertyTable extends Composite implements GmmlListener {
 		t.addControlListener(new TableColumnResizer(t, t.getParent()));
 		
 		typeMappings = new Hashtable();
-		for(int i = 0; i < attributes.size(); i++)
+		for(int i = 0; i < totalAttributes.size(); i++)
 		{
-			typeMappings.put(attributes.get(i), attributeTypes[i]);
+			typeMappings.put(totalAttributes.get(i), attributeTypes[i]);
 		}
 	}
 	
-	public void setGraphics(GmmlDataObject g)
-	{
-		this.g = g;
-		tableViewer.setInput(g);
-	}
-		
 	private CellEditor getCellEditor(Object element)
 	{
 		String key = (String)element;
@@ -175,9 +191,9 @@ public class GmmlPropertyTable extends Composite implements GmmlListener {
 		
 		public Object getValue(Object element, String property) {
 			String key = (String)element;
-			if(g.propItems.containsKey(key))
-			{
-				Object value = g.propItems.get(key);
+//			if(g.propItems.containsKey(key))
+//			{
+				Object value = g.getProperty(key);
 				switch((Integer)typeMappings.get(key))
 				{
 				case DOUBLE:
@@ -194,7 +210,7 @@ public class GmmlPropertyTable extends Composite implements GmmlListener {
 					else
 						return (Integer)value;
 				}
-			}
+//			}
 			return null;
 		}
 		
@@ -216,9 +232,7 @@ public class GmmlPropertyTable extends Composite implements GmmlListener {
 				}
 			}
 			
-			g.propItems.put(key, value);
-			g.updateFromPropItems();
-			tableViewer.refresh();
+			g.setProperty(key, value);			
 		}
 	};
 	
@@ -249,7 +263,7 @@ public class GmmlPropertyTable extends Composite implements GmmlListener {
 			String key = (String)element;
 			switch(columnIndex) {
 				case 0:
-					if(attributes.contains(key))
+					if(totalAttributes.contains(key))
 					{
 						if(key.equals("Name"))
 						{
@@ -258,13 +272,13 @@ public class GmmlPropertyTable extends Composite implements GmmlListener {
 								return "Gene ID";
 							}
 						}
-						return (String)labelMappings.get(attributes.indexOf(key));
+						return (String)labelMappings.get(totalAttributes.indexOf(key));
 					}
 				case 1:
 					//TODO: prettier labels for different value types
-					if(g.propItems.containsKey(key))
+					if(attributes.contains(key))
 					{
-						return g.propItems.get(key).toString();
+						return g.getProperty(key).toString();
 					}
 			}
 			return null;
@@ -279,7 +293,7 @@ public class GmmlPropertyTable extends Composite implements GmmlListener {
 	};
 
 	public void gmmlObjectModified(GmmlEvent e) {
-		// TODO Auto-generated method stub
-		
+		tableViewer.refresh();
+		GmmlVision.drawing.redrawDirtyRect();
 	}
 }

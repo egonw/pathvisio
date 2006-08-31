@@ -256,10 +256,10 @@ public class MappFormat
 		mappInfo[1][icolNotes] = mi.getNotes();
 		mappInfo[1][icolRemarks] = mi.getComment();		
 		
-		mappInfo[1][icolBoardWidth] = "" + mi.getBoardWidth();
-		mappInfo[1][icolBoardHeight] = "" + mi.getBoardHeight();
-		mappInfo[1][icolWindowWidth] = "" + mi.getWindowWidth();
-		mappInfo[1][icolWindowHeight] = "" + mi.getWindowHeight();
+		mappInfo[1][icolBoardWidth] = "" + mi.getBoardWidth() *  GmmlData.GMMLZOOM;
+		mappInfo[1][icolBoardHeight] = "" + mi.getBoardHeight() *  GmmlData.GMMLZOOM;
+		mappInfo[1][icolWindowWidth] = "" + mi.getWindowWidth() *  GmmlData.GMMLZOOM;
+		mappInfo[1][icolWindowHeight] = "" + mi.getWindowHeight() *  GmmlData.GMMLZOOM;
 		
 		return mappInfo;
 	}
@@ -313,10 +313,10 @@ public class MappFormat
 		o.setNotes(mappInfo[1][icolNotes]);
 		o.setComment(mappInfo[1][icolRemarks]);		
 
-		o.setBoardWidth(Double.parseDouble(mappInfo[1][icolBoardWidth]));
-		o.setBoardHeight(Double.parseDouble(mappInfo[1][icolBoardHeight]));
-		o.setWindowWidth(Double.parseDouble(mappInfo[1][icolWindowWidth]));
-		o.setWindowHeight(Double.parseDouble(mappInfo[1][icolWindowHeight]));
+		o.setBoardWidth(Double.parseDouble(mappInfo[1][icolBoardWidth]) / GmmlData.GMMLZOOM);
+		o.setBoardHeight(Double.parseDouble(mappInfo[1][icolBoardHeight]) / GmmlData.GMMLZOOM);
+		o.setWindowWidth(Double.parseDouble(mappInfo[1][icolWindowWidth]) / GmmlData.GMMLZOOM);
+		o.setWindowHeight(Double.parseDouble(mappInfo[1][icolWindowHeight]) / GmmlData.GMMLZOOM);
 		
 		data.dataObjects.add(o);
 	}

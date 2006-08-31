@@ -21,50 +21,15 @@ public class GmmlBrace extends GmmlGraphicsShape
 	private static final long serialVersionUID = 1L;
 	
 	public static final int INITIAL_PPO = 10;
-				
-	/**
-	 * Constructor for this class
-	 * @param canvas - the GmmlDrawing this brace will be part of
-	 */
-	public GmmlBrace(GmmlDrawing canvas)
-	{
-		super(canvas);
-		drawingOrder = GmmlDrawing.DRAW_ORDER_BRACE;
-		gdata.setObjectType(ObjectType.BRACE);
-	}
-	
-	/**
-	 * Constructor for this class
-	 * @param centerX - center x coordinate
-	 * @param centerY - center y coordinate
-	 * @param width - width
-	 * @param ppo - picpoint ofset
-	 * @param orientation - orientation (0 for top, 1 for right, 2 for bottom, 3 for left)
-	 * @param color - the color this brace will be painted
-	 * @param canvas - the GmmlDrawing this brace will be part of
-	 */
-	public GmmlBrace(double centerX, double centerY, double width, double ppo, int orientation, RGB color, GmmlDrawing canvas)
-	{
-		this(canvas);
-		
-		gdata.setCenterX(centerX);
-		gdata.setCenterY(centerY);
-		gdata.setWidth(width);
-		gdata.setHeight(ppo);
-		gdata.setOrientation(orientation);
-		gdata.setColor(color);
-
-		setHandleLocation();
-	}
 
 	/**
 	 * Constructor for mapping a JDOM Element.
 	 * @param e	- the GMML element which will be loaded as a GmmlBrace
 	 * @param canvas - the GmmlDrawing this GmmlBrace will be part of
 	 */
-	public GmmlBrace(GmmlDrawing canvas, GmmlDataObject _gdata) {
-		this(canvas);
-		gdata = _gdata;		
+	public GmmlBrace(GmmlDrawing canvas, GmmlDataObject o) {
+		super(canvas, o);
+		drawingOrder = GmmlDrawing.DRAW_ORDER_BRACE;
 		setHandleLocation();
 	}
 	
@@ -116,6 +81,7 @@ public class GmmlBrace extends GmmlGraphicsShape
 		buffer.setTransform(null);
 		
 		c.dispose();
+		tr.dispose();
 	}
 	
 	protected void draw(PaintEvent e)

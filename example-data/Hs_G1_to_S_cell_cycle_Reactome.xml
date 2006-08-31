@@ -2,7 +2,7 @@
 <Pathway Name="G1 to S cell cycle control" Data-Source="GenMAPP 2.0" Version="20041203" Author="Alexander C. Zambon" Maintained-By="Alexander C. Zambon" Email="azambon@gladstone.ucsf.edu" Availability="" Last-Modified="">
   <Notes>Adapted from http://www.genomeknowledge.org/, and Maeda et al. Journal of Invest Dermatol. 2002. 119:22-26.</Notes>
   <Comment></Comment>
-  <Graphics BoardWidth="370770.0" BoardHeight="185625.0" WindowWidth="263025.0" WindowHeight="208935.0" />
+  <Graphics BoardWidth="24718.0" BoardHeight="12375.0" WindowWidth="17535.0" WindowHeight="13929.0" />
   <GeneProduct GeneID="CDK4" Xref="" Type="unknown" Name="1019" BackpageHead="Cdk4" GeneProduct-Data-Source="LocusLink">
     <Notes></Notes>
     <Comment></Comment>

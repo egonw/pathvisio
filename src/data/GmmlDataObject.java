@@ -490,53 +490,73 @@ public class GmmlDataObject extends GmmlGraphicsData
 
 	public List<String> getAttributes()
 	{
-		return attributes;
+		List<String> result = Arrays.asList(new String[] { 
+				"Notes", "Comment"
+		});
+		switch (getObjectType())
+		{
+			case ObjectType.GENEPRODUCT:
+				result = ( Arrays.asList (new String[] {
+						"Notes", "Comment",
+						"CenterX", "CenterY", "Width", "Height",
+				// line, shape, brace, geneproduct, label
+				"Color",				
+				// gene product
+				"Name", "GeneProduct-Data-Source", "GeneID", 
+				"Xref", "BackpageHead", "Type"
+				}));
+				break;
+			case ObjectType.SHAPE:
+				result = ( Arrays.asList(new String[] {
+						"Notes", "Comment",
+						"CenterX", "CenterY", "Width", "Height",
+						// line, shape, brace, geneproduct, label
+						"Color", 
+						
+						// shape
+						"ShapeType", "Rotation", 
+				}));
+				break;
+			case ObjectType.BRACE:
+				result = (Arrays.asList(new String[] {
+						
+						"Notes", "Comment",
+						"CenterX", "CenterY", "Width", "Height",
+				// line, shape, brace, geneproduct, label
+				"Color", 
+				
+				// brace
+				"Orientation",
+				}));
+				break;
+			case ObjectType.LINE:
+				result = ( Arrays.asList(new String[] {
+						"Notes", "Comment",
+						
+						// line, shape, brace, geneproduct, label
+						"Color", 
+						
+						// line
+						"StartX", "StartY", "EndX", "EndY",			
+						"LineType", "LineStyle",						
+				}));
+				break;
+			case ObjectType.LABEL:
+				result = ( Arrays.asList(new String[] {
+						"Notes", "Comment",
+						"CenterX", "CenterY", "Width", "Height",
+						// line, shape, brace, geneproduct, label
+						"Color", 
+						// label
+						"TextLabel", 
+						"FontName","FontWeight","FontStyle","FontSize"		 
+				}));
+				break;
+				
+		}
+		return result;
 	}
 	
-	/*
-		public void updateToPropItems()
-		{
-			if (propItems == null)
-			{
-				propItems = new Hashtable();
-			}
-			
-			Object[] values = new Object[] {name, organism, dataSource, version,
-					author, maintainedBy, email, availability, lastModified,
-					boardWidth, boardHeight, windowWidth, windowHeight, mapInfoLeft, mapInfoTop
-					};
-			
-			for (int i = 0; i < attributes.size(); i++)
-			{
-				propItems.put(attributes.get(i), values[i]);
-			}
-		}
-
-		public void updateFromPropItems()
-		{
-			markDirty();
-			name			= (String)propItems.get(attributes.get(0));
-			organism		= (String)propItems.get(attributes.get(1));
-			dataSource		= (String)propItems.get(attributes.get(2));
-			version			= (String)propItems.get(attributes.get(3));
-			author			= (String)propItems.get(attributes.get(4));
-			maintainedBy	= (String)propItems.get(attributes.get(5));
-			email			= (String)propItems.get(attributes.get(6));
-			availability	= (String)propItems.get(attributes.get(7));
-			lastModified	= (String)propItems.get(attributes.get(8));
-			boardWidth		= (Integer)propItems.get(attributes.get(9));
-			boardHeight		= (Integer)propItems.get(attributes.get(10));
-			windowWidth		= (Integer)propItems.get(attributes.get(11));
-			windowHeight	= (Integer)propItems.get(attributes.get(12));
-			mapInfoLeft	= (Integer)propItems.get(attributes.get(13));
-			mapInfoTop		= (Integer)propItems.get(attributes.get(14));
-			markDirty();
-			canvas.redrawDirtyRect();
-			//Also update the canvas and window size:
-			canvas.setSize((int)boardWidth, (int)boardHeight);
-//			canvas.gmmlVision.getShell().setSize(windowWidth, windowHeight);
-		}
-		*/
 
 	private static final List<String> attributes = Arrays.asList(new String[] {
 			
@@ -565,96 +585,94 @@ public class GmmlDataObject extends GmmlGraphicsData
 			
 			// label
 			"TextLabel", 
-			"FontName","FontWeight","FontStyle","FontSize"
-			
-			 
+			"FontName","FontWeight","FontStyle","FontSize"		 
 	});
 	
-	public void updateToPropItems()
+	public void setProperty(String key, Object value)
 	{
-		if (propItems == null)
+		int i = attributes.indexOf(key);	
+		switch (i)
 		{
-			propItems = new Hashtable<String, Object>();
-		}
-		
-		Object[] values = new Object[] {
-				getNotes(), getComment(),
+			case 0: setNotes		((String) value); break;
+			case 1: setComment 		((String) value); break;
+	
+			case 2: setColor 		((RGB)    value); break;
 				
-				getColor(),
+			case 3: setCenterX 		((Double) value); break;
+			case 4: setCenterY 		((Double) value); break;
+			case 5: setWidth		((Double) value); break;
+			case 6: setHeight		((Double) value); break;
+			
+			case 7: setShapeType	((Integer)value); break;
+			case 8: setRotation		((Double) value); break;
 				
-				getCenterX(), getCenterY(),
-				getWidth(), getHeight(), 
+			case 9: setStartX 		((Double) value); break;
+			case 10: setStartY 		((Double) value); break;
+			case 11: setEndX 		((Double) value); break;
+			case 12: setEndY 		((Double) value); break;
+			case 13: setLineType		((Integer)value); break;
+			case 14: setLineStyle	((Integer)value); break;
 				
-				getShapeType(), 
-				getRotation(),
-				
-				getStartX(), getStartY(),
-				getEndX(), getEndY(),
-				getLineType(), getLineStyle(),
-				
-				getOrientation(),
-				
-				getGeneProductName(),
-				getDataSource(),
-				getGeneID(),
-				getXref(),
-				getBackpageHead(),
-				getGeneProductType(),
-				
-				getLabelText(),				
-				getFontName(),
-				isBold(),
-				isItalic(),
-				getFontSize()
-				
-		};
-		
-		for (int i = 0; i < attributes.size(); i++)
-		{
-			propItems.put(attributes.get(i), values[i]);
+			case 15: setOrientation	((Integer)value); break;
+	
+			case 16: setGeneID 		((String) value); break;
+			case 17: setXref			((String) value); break;
+			case 18: setGeneProductName	((String)value); break;
+			case 19: setBackpageHead	((String)  value); break;
+			case 20: setGeneProductType	((String)value); break;
+			case 21: setDataSource 	((String)  value); break;
+			
+			case 22: setLabelText 	((String) value); break;
+			case 23: setFontName		((String)  value); break;
+			case 24: setBold 		((Boolean) value); break;
+			case 25: setItalic 		((Boolean) value); break;
+			case 26: setFontSize		((Double)  value); break;
 		}
 	}
 	
-	public void updateFromPropItems()
+	public Object getProperty(String key)
 	{
-		setNotes		((String) propItems.get("Notes"));
-		setComment 		((String) propItems.get("Comment"));
-
-		setColor 		((RGB)    propItems.get("Color"));
-		
-		setCenterX 		((Double) propItems.get("CenterY"));
-		setCenterY 		((Double) propItems.get("CenterX"));
-		setWidth		((Double) propItems.get("Width"));
-		setHeight		((Double) propItems.get("Height"));
-		
-		setShapeType	((Integer)propItems.get("ShapeType"));
-		setRotation		((Double) propItems.get("Rotation"));
-		
-		setStartX 		((Double) propItems.get("StartX"));
-		setStartY 		((Double) propItems.get("StartY"));
-		setEndX 		((Double) propItems.get("EndX"));
-		setEndY 		((Double) propItems.get("EndY"));
-		setLineType		((Integer)propItems.get("LineType"));
-		setLineStyle	((Integer)propItems.get("LineStyle"));
-		
-		setOrientation	((Integer)propItems.get("Orientation"));
-
-		setGeneID 		((String)  propItems.get("GeneID"));
-		setXref			((String)  propItems.get("Xref"));
-		setGeneProductName	((String)propItems.get("Name"));
-		setBackpageHead	((String)  propItems.get("BackpageHead"));
-		setGeneProductType	((String)propItems.get("Type"));
-		setDataSource 	((String)  propItems.get("GeneProduct-Data-Source"));
-		
-		setLabelText 	(((String) propItems.get("TextLabel")));
-		setFontName		((String)  propItems.get("FontName"));
-		setBold 		((Boolean) propItems.get("FontWeight"));
-		setItalic 		((Boolean) propItems.get("FontStyle"));
-		setFontSize		((Double)  propItems.get("FontSize"));
+		//TODO: use hashtable or other way better than switch statement
+		int i = attributes.indexOf(key);
+		Object result = null;
+		switch (i)
+		{
+			case 0: result = getNotes(); break;
+			case 1: result = getComment(); break;
+			case 2: result = getColor(); break;
+			
+			case 3: result = getCenterX(); break;
+			case 4: result = getCenterY(); break;
+			case 5: result = getWidth(); break;
+			case 6: result = getHeight(); break;
+			
+			case 7: result = getShapeType(); break;
+			case 8: result = getRotation(); break;
+			
+			case 9: result = getStartX(); break;
+			case 10: result = getStartY(); break;
+			case 11: result = getEndX(); break;
+			case 12: result = getEndY(); break;
+			case 13: result = getLineType(); break;
+			case 14: result = getLineStyle(); break;
+			
+			case 15: result = getOrientation(); break;
+			
+			case 16: result = getGeneProductName(); break;
+			case 17: result = getDataSource(); break;
+			case 18: result = getGeneID(); break;
+			case 19: result = getXref(); break;
+			case 20: result = getBackpageHead(); break;
+			case 21: result = getGeneProductType(); break;
+			
+			case 22: result = getLabelText(); break;	
+			case 23: result = getFontName(); break;
+			case 24: result = isBold(); break;
+			case 25: result = isItalic(); break;
+			case 26: result = getFontSize(); break;
+		}
+		return result;
 	}
-	
-	//Methods dealing with property table
-	public Hashtable<String, Object> propItems;
 
 	public Element createJdomElement() 
 	{		

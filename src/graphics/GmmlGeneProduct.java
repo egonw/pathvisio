@@ -46,52 +46,14 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	// note: not the same as color!
 	RGB fillColor = INITIAL_FILL_COLOR;
 	GmmlGpColor gpColor;
-	
-	/**
-	 * Constructor for this class
-	 * @param canvas - the GmmlDrawing this geneproduct will be part of
-	 */
-	public GmmlGeneProduct(GmmlDrawing canvas)
-	{
-		super(canvas);
 		
-		drawingOrder = GmmlDrawing.DRAW_ORDER_GENEPRODUCT;
-				
+	public GmmlGeneProduct (GmmlDrawing canvas, GmmlDataObject o) {
+		super(canvas, o);
+		drawingOrder = GmmlDrawing.DRAW_ORDER_GENEPRODUCT;				
 		gpColor = new GmmlGpColor(this);
 		
-		this.fontSizeDouble = INITIAL_FONTSIZE * canvas.getZoomFactor();
-		this.fontSize = (int)this.fontSizeDouble;
-		gdata.setObjectType(ObjectType.GENEPRODUCT);
-	}
-	
-	/**
-	 * Constructor for this class
-	 * @param x - the upper left corner x coordinate
-	 * @param y - the upper left corner y coordinate
-	 * @param width - the width
-	 * @param height - the height
-	 * @param geneLabel - the gene label as it will be shown as a label
-	 * @param xref - 
-	 * @param color - the color this geneproduct will be painted
-	 * @param canvas - the GmmlDrawing this geneproduct will be part of
-	 */
-	public GmmlGeneProduct(double x, double y, double width, double height, String geneLabel, String xref, RGB color, GmmlDrawing canvas){
-		this(canvas);
-		
-		gdata.setCenterX(x);
-		gdata.setCenterY(y);
-		gdata.setWidth(width);
-		gdata.setHeight(height);
-		gdata.setGeneID(geneLabel);
-		gdata.setXref(xref);
-		gdata.setColor(color);
-
-		setHandleLocation();
-	}
-		
-	public GmmlGeneProduct (GmmlDrawing canvas, GmmlDataObject _gdata) {
-		this(canvas);
-		gdata = _gdata;		
+		fontSizeDouble = INITIAL_FONTSIZE * canvas.getZoomFactor();
+		fontSize = (int)fontSizeDouble;
 		setHandleLocation();
 	}
 	

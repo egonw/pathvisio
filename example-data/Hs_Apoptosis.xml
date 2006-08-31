@@ -2,7 +2,7 @@
 <Pathway Name="Apoptosis Mechanisms" Data-Source="GenMAPP 2.0" Version="20041216" Author="Alexander C. Zambon and Beth Lawlor" Maintained-By="Alexander C. Zambon" Email="azambon@gladstone.ucsf.edu" Availability="" Last-Modified="">
   <Notes></Notes>
   <Comment></Comment>
-  <Graphics BoardWidth="299333.25" BoardHeight="184008.0" WindowWidth="289560.0" WindowHeight="198450.0" />
+  <Graphics BoardWidth="19955.55" BoardHeight="12267.2" WindowWidth="19304.0" WindowHeight="13230.0" />
   <GeneProduct GeneID="TRADD" Xref="" Type="unknown" Name="8717" BackpageHead="TRADD" GeneProduct-Data-Source="LocusLink">
     <Notes></Notes>
     <Comment></Comment>
