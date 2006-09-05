@@ -914,6 +914,7 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener
 				}
 			}
 			removeDrawingObjects(toRemove);
+			s.fitToSelection();
 			redraw();
 		}
 		if(e.keyCode == SWT.HOME) {
@@ -932,7 +933,8 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener
 	{
 		for(GmmlDrawingObject o : toRemove)
 		{
-			drawingObjects.remove(o);
+			drawingObjects.remove(o); //Remove from drawing
+			s.removeFromSelection(o); //Remove from selection
 		}
 	}
 
