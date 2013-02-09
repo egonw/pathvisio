@@ -16,12 +16,14 @@
 package org.pathvisio.gui.handler;
 
 import java.awt.Component;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -35,6 +37,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 import org.bridgedb.DataSource;
+import org.bridgedb.bio.BioDataSource;
 import org.bridgedb.bio.Organism;
 import org.pathvisio.core.model.DataNodeType;
 import org.pathvisio.core.model.Pathway;
@@ -61,6 +64,30 @@ public class DataSourceHandler extends DefaultCellEditor implements ContextSensi
 
 	//-- ContextSensitiveEditor methods --//
 
+	/**
+	 * Blacklist of DataSources that we do not want to show up in the GUI, for the reason
+	 * given in the source comments.
+	 */
+	private final static List<DataSource> dataSourceBlackList = new ArrayList<DataSource>() {{
+		// the next bunch is replaced by "Ensemble"
+		add(BioDataSource.ENSEMBL_BSUBTILIS);
+		add(BioDataSource.ENSEMBL_CELEGANS);
+		add(BioDataSource.ENSEMBL_CHICKEN);
+		add(BioDataSource.ENSEMBL_CHIMP);
+		add(BioDataSource.ENSEMBL_COW);
+		add(BioDataSource.ENSEMBL_DOG);
+		add(BioDataSource.ENSEMBL_ECOLI);
+		add(BioDataSource.ENSEMBL_FRUITFLY);
+		add(BioDataSource.ENSEMBL_HORSE);
+		add(BioDataSource.ENSEMBL_HUMAN);
+		add(BioDataSource.ENSEMBL_MOSQUITO);
+		add(BioDataSource.ENSEMBL_MOUSE);
+		add(BioDataSource.ENSEMBL_MTUBERCULOSIS);
+		add(BioDataSource.ENSEMBL_SCEREVISIAE);
+		add(BioDataSource.ENSEMBL_XENOPUS);
+		add(BioDataSource.ENSEMBL_ZEBRAFISH);
+	}};
+
 	//TODO: make part of org.bridgedb.DataSource
 	/**
 	 * returns a filtered subset of available datasources.
@@ -76,6 +103,7 @@ public class DataSourceHandler extends DefaultCellEditor implements ContextSensi
 		for (DataSource ds : DataSource.getDataSources())
 		{
 			if ((primary == null || primary == ds.isPrimary()) &&
+				!dataSourceBlackList.contains(ds) &&
 				(type == null || types.contains(ds.getType())) &&
 				(o == null || ds.getOrganism() == null || o == ds.getOrganism())) {
 				result.add (ds);
