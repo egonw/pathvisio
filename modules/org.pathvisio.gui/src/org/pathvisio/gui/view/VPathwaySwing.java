@@ -16,6 +16,11 @@
 //
 package org.pathvisio.gui.view;
 
+import com.martijncourteaux.multitouchgestures.GestureAdapter;
+import com.martijncourteaux.multitouchgestures.MultiTouchGestureUtilities;
+import com.martijncourteaux.multitouchgestures.event.MagnifyGestureEvent;
+import com.martijncourteaux.multitouchgestures.event.RotateGestureEvent;
+import com.martijncourteaux.multitouchgestures.event.ScrollGestureEvent;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -31,6 +36,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -84,6 +90,9 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 	protected VPathway child;
 
 	protected JScrollPane container;
+	
+	private static final boolean isOSX =
+			System.getProperty("os.name").startsWith("Mac OS X");
 
 	public VPathwaySwing(JScrollPane parent) {
 		super();
@@ -94,6 +103,35 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 		addMouseMotionListener(this);
 		addKeyListener(this);
 		addMouseWheelListener(this);
+		
+		if (isOSX) {
+
+			MultiTouchGestureUtilities.addGestureListener(this, new GestureAdapter()
+			{
+
+				@Override
+				public void magnify(MagnifyGestureEvent me)
+				{
+					child.zoomToCursor(100 * child.getZoomFactor() * (1 + me.getMagnification()),
+							new Point((int) me.getMouseX(), (int) me.getMouseY()));
+
+					Component comp = container.getParent().getParent();
+					if (comp instanceof MainPanel)
+						((MainPanel)comp).updateZoomCombo();
+				}
+
+				@Override
+				public void scroll(ScrollGestureEvent e)
+				{
+					Rectangle r = container.getViewport().getViewRect();
+					int newx = Math.max((int) (r.getMinX() - e.getDeltaX()), 0);
+					int newy = Math.max((int) (r.getMinY() - e.getDeltaY()), 0);
+					scrollTo(newx, newy);
+				}
+
+			});
+		}
+
 
 		setFocusable(true);
 		setRequestFocusEnabled(true);
@@ -181,6 +219,12 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 	public void keyTyped(KeyEvent e) {
 		// TODO: find out how to handle this one
 	}
+	
+	public void scrollTo(int newx, int newy) {
+		container.getViewport().setViewPosition(
+				new Point (newx, newy)
+		);
+	}
 
 	public void mouseDragged(MouseEvent e) {
 		Rectangle r = container.getViewport().getViewRect();
@@ -204,9 +248,7 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 		{
 			newy = Math.max (newy - stepSize, 0);
 		}
-		container.getViewport().setViewPosition(
-				new Point (newx, newy)
-		);
+		scrollTo(newx, newy);
 		child.mouseMove(new SwingMouseEvent(e));
 	}
 
@@ -215,15 +257,30 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 	}
 
 	public void mouseWheelMoved(MouseWheelEvent e) {
-	    int notches = e.getWheelRotation();
-	    if(notches < 0) {
-	    	child.zoomToCursor(child.getPctZoom() * 21 / 20, e.getPoint());
-	    } else { 
-	    	child.zoomToCursor(child.getPctZoom() * 20 / 21, e.getPoint());
-	    }
-	    
-	    Component comp = container.getParent().getParent();
-	    if (comp instanceof MainPanel) ((MainPanel)comp).updateZoomCombo();
+		if (isOSX) {
+			return;
+		}
+		int notches = e.getWheelRotation();
+
+		if (false) {
+			if(notches < 0) {
+				child.zoomToCursor(child.getPctZoom() * 21 / 20, e.getPoint());
+			} else { 
+				child.zoomToCursor(child.getPctZoom() * 20 / 21, e.getPoint());
+			}
+
+			Component comp = container.getParent().getParent();
+			if (comp instanceof MainPanel) ((MainPanel)comp).updateZoomCombo();
+		}
+
+		boolean horizontalScroll=((e.getModifiers() & ActionEvent.SHIFT_MASK) ==
+					ActionEvent.SHIFT_MASK)
+				|| ((e.getModifiers() & ActionEvent.META_MASK) == ActionEvent.META_MASK);
+
+		Rectangle r = container.getViewport().getViewRect();
+		int newx = Math.min((int) r.getMinX() + (horizontalScroll ? notches : 0), 0);
+		int newy = Math.min((int) r.getMinY() + (horizontalScroll ? 0 : notches), 0);
+		scrollTo(newx, newy);
 	}
 	
 	public void registerKeyboardAction(KeyStroke k, Action a) {
