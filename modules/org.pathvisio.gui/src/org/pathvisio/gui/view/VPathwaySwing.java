@@ -91,7 +91,7 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 
 	protected JScrollPane container;
 	
-	private static final boolean isOSX =
+	private static boolean isOSX =
 			System.getProperty("os.name").startsWith("Mac OS X");
 
 	public VPathwaySwing(JScrollPane parent) {
@@ -105,31 +105,35 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 		addMouseWheelListener(this);
 		
 		if (isOSX) {
-
-			MultiTouchGestureUtilities.addGestureListener(this, new GestureAdapter()
-			{
-
-				@Override
-				public void magnify(MagnifyGestureEvent me)
+			try {
+				MultiTouchGestureUtilities.addGestureListener(this, new GestureAdapter()
 				{
-					child.zoomToCursor(100 * child.getZoomFactor() * (1 + me.getMagnification()),
-							new Point((int) me.getMouseX(), (int) me.getMouseY()));
 
-					Component comp = container.getParent().getParent();
-					if (comp instanceof MainPanel)
-						((MainPanel)comp).updateZoomCombo();
-				}
+					@Override
+					public void magnify(MagnifyGestureEvent me)
+					{
+						child.zoomToCursor(100 * child.getZoomFactor() * (1 + me.getMagnification()),
+								new Point((int) me.getMouseX(), (int) me.getMouseY()));
 
-				@Override
-				public void scroll(ScrollGestureEvent e)
-				{
-					Rectangle r = container.getViewport().getViewRect();
-					int newx = Math.max((int) (r.getMinX() - e.getDeltaX()), 0);
-					int newy = Math.max((int) (r.getMinY() - e.getDeltaY()), 0);
-					scrollTo(newx, newy);
-				}
+						Component comp = container.getParent().getParent();
+						if (comp instanceof MainPanel)
+							((MainPanel)comp).updateZoomCombo();
+					}
 
-			});
+					@Override
+					public void scroll(ScrollGestureEvent e)
+					{
+						Rectangle r = container.getViewport().getViewRect();
+						int newx = Math.max((int) (r.getMinX() - e.getDeltaX()), 0);
+						int newy = Math.max((int) (r.getMinY() - e.getDeltaY()), 0);
+						scrollTo(newx, newy);
+					}
+
+				});
+			} catch (Throwable t) {
+				t.printStackTrace();
+				isOSX = false;
+			}
 		}
 
 
@@ -524,6 +528,7 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 			((JScrollPane)container).remove(this);
 		child.removeVPathwayListener(this);
 		child.removeVElementMouseListener(this);
+		MultiTouchGestureUtilities.removeAllGestureListeners(this);
 
 		removeMouseListener(this);
 		removeMouseMotionListener(this);
