@@ -10,6 +10,7 @@
 		<include name="org.bridgedb.bio.jar"/>
 		<include name="org.bridgedb.rdb.jar"/>
 		<include name="org.pathvisio.jgoodies.forms.jar"/>
+		<include name="MultiTouchGesturesJava-1.0-SNAPSHOT.jar"/>
 	  </fileset>
 	  <fileset dir="${bundle.dest}">
 		<include name="org.pathvisio.core.jar"/>

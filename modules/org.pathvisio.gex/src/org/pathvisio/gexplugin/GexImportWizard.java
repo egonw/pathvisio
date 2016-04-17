@@ -25,11 +25,14 @@ import com.nexes.wizard.WizardPanelDescriptor;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FileDialog;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 
 import javax.swing.AbstractAction;
@@ -112,6 +115,9 @@ public class GexImportWizard extends Wizard
 
         setCurrentPanel(FilePage.IDENTIFIER);
 	}
+	
+	private static final boolean useFileDialog =
+			System.getProperty("os.name").startsWith("Mac OS X");
 
 	private class FilePage extends WizardPanelDescriptor implements ActionListener
 	{
@@ -277,7 +283,7 @@ public class GexImportWizard extends Wizard
 				count++;
 			}
 		}
-		
+				
 		public void actionPerformed(ActionEvent e) {
 			String action = e.getActionCommand();
 
@@ -287,18 +293,45 @@ public class GexImportWizard extends Wizard
 						PreferenceManager.getCurrent().get(GlobalPreference.DB_CONNECTSTRING_GDB)
 				);
 			} else if(ACTION_INPUT.equals(action)) {
-
-				File defaultdir = PreferenceManager.getCurrent().getFile(GlobalPreference.DIR_LAST_USED_EXPRESSION_IMPORT);
-				JFileChooser jfc = new JFileChooser();
-				jfc.setCurrentDirectory(defaultdir);
-				jfc.addChoosableFileFilter(new SimpleFileFilter("Data files", "*.txt|*.csv|*.tab", true));
-				int result = jfc.showDialog(null, "Select data file");
-				if (result == JFileChooser.APPROVE_OPTION)
+				File defaultDir = PreferenceManager.getCurrent().getFile(GlobalPreference.DIR_LAST_USED_EXPRESSION_IMPORT);
+				final File selectedFile;
+				final File selectedDirectory;
+				if (useFileDialog) {
+					FileDialog fileDialog = new FileDialog(new Frame(),"Select data file", FileDialog.LOAD);
+					fileDialog.setDirectory(defaultDir.getAbsolutePath());
+					fileDialog.setFilenameFilter(new FilenameFilter() {
+						
+						@Override
+						public boolean accept(File dir, String name) {
+							return name.endsWith(".txt") ||
+									name.endsWith(".csv") || name.endsWith(".tab");
+						}
+					});
+					fileDialog.setVisible(true);
+					if (fileDialog.getDirectory() == null) {
+						selectedDirectory = null;
+						selectedFile = null;
+					} else {
+						selectedDirectory = new File(fileDialog.getDirectory());
+						selectedFile = new File(fileDialog.getDirectory() + "/" + fileDialog.getFile());
+					}
+				} else {
+					JFileChooser jfc = new JFileChooser();
+					jfc.setCurrentDirectory(defaultDir);
+					jfc.addChoosableFileFilter(new SimpleFileFilter("Data files", "*.txt|*.csv|*.tab", true));
+					int result = jfc.showDialog(null, "Select data file");
+					if (result == JFileChooser.APPROVE_OPTION) {
+						selectedFile = jfc.getSelectedFile();
+						selectedDirectory = jfc.getCurrentDirectory();
+					} else {
+						selectedFile = null;
+						selectedDirectory = null;
+					}
+				}
+				if (selectedFile != null)
 				{
-					File f = jfc.getSelectedFile();
-					defaultdir = jfc.getCurrentDirectory();
-					PreferenceManager.getCurrent().setFile(GlobalPreference.DIR_LAST_USED_EXPRESSION_IMPORT, defaultdir);
-					txtInput.setText("" + f);
+					PreferenceManager.getCurrent().setFile(GlobalPreference.DIR_LAST_USED_EXPRESSION_IMPORT, selectedDirectory);
+					txtInput.setText("" + selectedFile);
 					updateTxtFile ();
 				}
 			} else if(ACTION_OUTPUT.equals(action)) {

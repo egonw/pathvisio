@@ -20,11 +20,14 @@ Require-Bundle: org.pathvisio.core;bundle-version="3.2.0",
  org.bridgedb;bundle-version="2.0.0",
  org.bridgedb.bio;bundle-version="2.0.0",
  org.bridgedb.gui;bundle-version="2.0.0",
- org.bridgedb.rdb;bundle-version="2.0.0"
+ org.bridgedb.rdb;bundle-version="2.0.0",
+ com.martijncourteaux.multitouchgestures;bundle-version="1.0"
 Import-Package: org.osgi.framework;version="1.5.0",
  javax.swing,
  javax.swing.table,
- javax.swing.text
+ javax.swing.text,
+ com.martijncourteaux.multitouchgestures,
+ com.martijncourteaux.multitouchgestures.event
 Bundle-DocURL: http://www.pathvisio.org
 Bundle-Vendor: PathVisio developers
 Bundle-Copyright: 2006-2014 BiGCaT Bioinformatics
