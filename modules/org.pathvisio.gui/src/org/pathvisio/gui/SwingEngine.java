@@ -19,6 +19,8 @@ package org.pathvisio.gui;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Desktop;
+import java.awt.FileDialog;
+import java.awt.Frame;
 import java.io.File;
 import java.net.URL;
 import java.util.Comparator;
@@ -279,17 +281,23 @@ public class SwingEngine implements ApplicationEventListener, Pathway.StatusFlag
 		return false;
 	}
 	
+	private static final boolean useFileDialog =
+			System.getProperty("os.name").startsWith("Mac OS X");
+
 	/**
 	 * A wrapper around JFileChooser that has the right defaults and File Filters.
 	 */
 	private class PathwayChooser 
 	{
 		private final JFileChooser jfc;
+		private final FileDialog fileDialog;
 		private final String taskName;
 		private final Preference dirPreference;
-		
+				
 		public PathwayChooser(String taskName, int dialogType, Preference dirPreference, Set<? extends PathwayIO> set)
 		{
+			fileDialog = new FileDialog(new Frame(), taskName + " pathway", dialogType);
+			fileDialog.setDirectory(PreferenceManager.getCurrent().getFile(dirPreference).getAbsolutePath());
 			jfc = new JFileChooser();
 			this.taskName = taskName;
 			this.dirPreference = dirPreference;
@@ -313,15 +321,18 @@ public class SwingEngine implements ApplicationEventListener, Pathway.StatusFlag
 			);
 			exporters.addAll(set);
 
-			FileFilter selectedFilter = null;
+			PathwayFileFilter selectedFilter = null;
 			for(PathwayIO exp : exporters) {
-				FileFilter ff = new PathwayFileFilter(exp);
+				PathwayFileFilter ff = new PathwayFileFilter(exp);
 				jfc.addChoosableFileFilter(ff);
 				if(exp instanceof GpmlFormat) {
 					selectedFilter = ff;
 				}
 			}
-			if(selectedFilter != null) jfc.setFileFilter(selectedFilter);
+			if(selectedFilter != null) {
+				jfc.setFileFilter(selectedFilter);
+				fileDialog.setFilenameFilter(selectedFilter);
+			}
 		}
 
 		public FileFilter getFileFilter()
@@ -331,6 +342,15 @@ public class SwingEngine implements ApplicationEventListener, Pathway.StatusFlag
 
 		public int show ()	
 		{
+			if (useFileDialog) {
+				fileDialog.setVisible(true);
+				if (fileDialog.getDirectory() == null) {
+					return JFileChooser.CANCEL_OPTION;
+				} else {
+					PreferenceManager.getCurrent().setFile(dirPreference, new File(fileDialog.getDirectory()));
+					return JFileChooser.APPROVE_OPTION;
+				}
+			}
 			int status = jfc.showDialog(getApplicationPanel(), taskName);
 			if(status == JFileChooser.APPROVE_OPTION) 
 			{
@@ -341,6 +361,9 @@ public class SwingEngine implements ApplicationEventListener, Pathway.StatusFlag
 			
 		public File getSelectedFile()
 		{
+			if (useFileDialog) {
+				return new File(fileDialog.getDirectory() + "/" + fileDialog.getFile());
+			}
 			return jfc.getSelectedFile();
 		}
 	}

@@ -17,6 +17,8 @@
 package org.pathvisio.gui;
 
 import java.io.File;
+import java.io.FilenameFilter;
+
 import javax.swing.filechooser.FileFilter;
 
 import org.pathvisio.core.model.PathwayIO;
@@ -26,7 +28,7 @@ import org.pathvisio.core.model.PathwayIO;
  * Can be used to create a {@link FileDialog} for importers or exporters.
  * @author thomas
  */
-public class PathwayFileFilter extends FileFilter {
+public class PathwayFileFilter extends FileFilter implements FilenameFilter {
 	String[] exts;
 	String name;
 
@@ -39,6 +41,7 @@ public class PathwayFileFilter extends FileFilter {
 		return exts[0];
 	}
 
+	@Override
 	public boolean accept(File f) {
 		if(f.isDirectory()) return true;
 
@@ -55,6 +58,7 @@ public class PathwayFileFilter extends FileFilter {
 		return false;
 	}
 
+	@Override
 	public String getDescription() {
 		StringBuilder extstr = new StringBuilder();
 		for(String e : exts) {
@@ -64,5 +68,10 @@ public class PathwayFileFilter extends FileFilter {
 		}
 		String str = extstr.substring(0, extstr.length() - 2);
 		return name + " (" + str + ")";
+	}
+
+	@Override
+	public boolean accept(File dir, String name1) {
+		return accept(new File(dir.getAbsoluteFile() + "/" + name1));
 	}
 }
