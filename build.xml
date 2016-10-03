@@ -77,6 +77,7 @@
 		<delete file="wikipathways-client.jar"/>
 		<delete dir="${release.dir}" />
 		<delete dir="${axis.wpclient.dir}" />
+        <delete dir="build" />
 		<iterate target="dist-clean"/>
 	</target>
 
